@@ -1,1 +1,1 @@
-"# medora.ai_demo" 
+this is the demo for medora.ai, our ai powered hospital management assistant
