@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medora.chat - Medora.ai</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            font-weight: 500;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            height: 100vh;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            padding: 0 24px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            font-size: 20px;
+        }
+
+        .patient-profile {
+            padding: 0 24px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .patient-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            object-fit: cover;
+            border: 3px solid #f8f9fa;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .patient-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .patient-id {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .patient-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding: 0 8px;
+        }
+
+        .patient-stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            margin-bottom: 6px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: #f8f9fa;
+            color: #333;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: #333;
+            color: white;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .chat-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .chat-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2e7d32;
+            animation: pulse 2s infinite;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            margin: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .ai-avatar {
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .message-content {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: #333;
+            color: white;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .message.user .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 12px;
+            max-width: 80%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .typing-indicator.show {
+            opacity: 1;
+        }
+
+        .typing-content {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #666;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px 50px 12px 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #333;
+            box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
+        }
+
+        .voice-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .voice-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .voice-btn.recording {
+            background: #ff4757;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .send-btn {
+            background: #333;
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .send-btn:hover {
+            background: #555;
+            transform: translateY(-1px);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            background: #f8f9fa;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .quick-action-btn:hover {
+            background: #eee;
+            transform: translateY(-1px);
+        }
+
+        /* Health Suggestions */
+        .health-suggestions {
+            background: #e3f2fd;
+            border: 1px solid #1976d2;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 16px 0;
+        }
+
+        .suggestion-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .suggestion-icon {
+            font-size: 16px;
+        }
+
+        .suggestion-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .suggestion-content {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .chat-container {
+                margin: 10px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .quick-actions {
+                justify-content: center;
+            }
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: white;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .suggestion-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .suggestion-card:hover {
+            background: #eee;
+            transform: translateY(-2px);
+        }
+
+        .suggestion-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .suggestion-card-desc {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>
+                    <span class="logo-icon">🏥</span>
+                    Medora.ai
+                </h1>
+            </div>
+            
+            <div class="patient-profile">
+                <img src="/placeholder.svg?height=80&width=80" alt="Patient" class="patient-avatar">
+                <div class="patient-name">Priya Sharma</div>
+                <div class="patient-id">Patient ID: PS-2024-0042</div>
+                
+                <div class="patient-stats">
+                    <div class="patient-stat">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Visits</div>
+                    </div>
+                    <div class="patient-stat">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Reports</div>
+                    </div>
+                    <div class="patient-stat">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Doctors</div>
+                    </div>
+                </div>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="patient_dashboard.html" class="nav-link">
+                            <span class="nav-icon">📊</span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📅</span>
+                            Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">💊</span>
+                            Medications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ocr_prescriptions.html" class="nav-link">
+                            <span class="nav-icon">📄</span>
+                            OCR Prescriptions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="medora_chat.html" class="nav-link active">
+                            <span class="nav-icon">💬</span>
+                            Medora.chat
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📋</span>
+                            Medical Records
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">🩺</span>
+                            Test Results
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">⚙️</span>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <h1>Medora.chat</h1>
+                <p>Your AI health assistant - Ask questions about your health, medications, and symptoms</p>
+                <div class="chat-status">
+                    <div class="status-indicator"></div>
+                    <span class="status-text">AI Assistant Online</span>
+                </div>
+            </header>
+
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Welcome Message -->
+                    <div class="welcome-message" id="welcomeMessage">
+                        <div class="welcome-icon">🤖</div>
+                        <div class="welcome-title">Hello Priya! I'm your AI health assistant</div>
+                        <div class="welcome-subtitle">I can help you with questions about your medications, symptoms, health tips, and more. What would you like to know?</div>
+                        
+                        <div class="welcome-suggestions">
+                            <div class="suggestion-card" onclick="sendQuickMessage('Tell me about my current medications')">
+                                <div class="suggestion-card-title">💊 My Medications</div>
+                                <div class="suggestion-card-desc">Get info about your current prescriptions</div>
+                            </div>
+                            <div class="suggestion-card" onclick="sendQuickMessage('What should I do if I miss a dose?')">
+                                <div class="suggestion-card-title">⏰ Missed Dose</div>
+                                <div class="suggestion-card-desc">Learn what to do if you miss medication</div>
+                            </div>
+                            <div class="suggestion-card" onclick="sendQuickMessage('Give me healthy diet tips for diabetes')">
+                                <div class="suggestion-card-title">🥗 Diet Tips</div>
+                                <div class="suggestion-card-desc">Get personalized nutrition advice</div>
+                            </div>
+                            <div class="suggestion-card" onclick="sendQuickMessage('Explain my latest test results')">
+                                <div class="suggestion-card-title">📊 Test Results</div>
+                                <div class="suggestion-card-desc">Understand your recent lab reports</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div class="message-avatar ai-avatar">🤖</div>
+                        <div class="typing-content">
+                            <div class="typing-dots">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="chat-input-container">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="sendQuickMessage('What are the side effects of my medications?')">
+                            Side Effects
+                        </button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('When is my next appointment?')">
+                            Next Appointment
+                        </button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('How can I improve my blood sugar levels?')">
+                            Blood Sugar Tips
+                        </button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('Emergency contact information')">
+                            Emergency Help
+                        </button>
+                    </div>
+                    
+                    <div class="chat-input-wrapper">
+                        <div class="input-group">
+                            <textarea 
+                                id="chatInput" 
+                                class="chat-input" 
+                                placeholder="Ask me anything about your health..."
+                                rows="1"
+                            ></textarea>
+                            <button class="voice-btn" id="voiceBtn" title="Voice input">
+                                🎤
+                            </button>
+                        </div>
+                        <button class="send-btn" id="sendBtn" disabled>
+                            ➤
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const voiceBtn = document.getElementById('voiceBtn');
+            const typingIndicator = document.getElementById('typingIndicator');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            let isRecording = false;
+            let conversationStarted = false;
+
+            // Auto-resize textarea
+            chatInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                
+                // Enable/disable send button
+                sendBtn.disabled = this.value.trim() === '';
+            });
+
+            // Send message on Enter (but allow Shift+Enter for new line)
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Send button click
+            sendBtn.addEventListener('click', sendMessage);
+
+            // Voice button functionality
+            voiceBtn.addEventListener('click', function() {
+                if (!isRecording) {
+                    startRecording();
+                } else {
+                    stopRecording();
+                }
+            });
+
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (message === '') return;
+
+                // Hide welcome message on first interaction
+                if (!conversationStarted) {
+                    welcomeMessage.style.display = 'none';
+                    conversationStarted = true;
+                }
+
+                // Add user message
+                addMessage(message, 'user');
+                
+                // Clear input
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+                sendBtn.disabled = true;
+
+                // Show typing indicator and simulate AI response
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    generateAIResponse(message);
+                }, 2000);
+            }
+
+            function addMessage(content, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                const currentTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                        <img src="/placeholder.svg?height=36&width=36" alt="User" class="message-avatar">
+                        <div>
+                            <div class="message-content">${content}</div>
+                            <div class="message-time">${currentTime}</div>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="message-avatar ai-avatar">🤖</div>
+                        <div>
+                            <div class="message-content">${content}</div>
+                            <div class="message-time">${currentTime}</div>
+                        </div>
+                    `;
+                }
+
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function showTypingIndicator() {
+                typingIndicator.classList.add('show');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function hideTypingIndicator() {
+                typingIndicator.classList.remove('show');
+            }
+
+            function generateAIResponse(userMessage) {
+                let response = '';
+                const lowerMessage = userMessage.toLowerCase();
+
+                if (lowerMessage.includes('medication') || lowerMessage.includes('medicine')) {
+                    response = `Based on your current prescriptions, you're taking Metformin 500mg twice daily and Atorvastatin 20mg once daily. Both medications are important for managing your diabetes and cholesterol levels. 
+
+<div class="health-suggestions">
+    <div class="suggestion-header">
+        <span class="suggestion-icon">💡</span>
+        <span class="suggestion-title">Health Tip</span>
+    </div>
+    <div class="suggestion-content">Take Metformin with meals to reduce stomach upset, and take Atorvastatin at bedtime for best effectiveness.</div>
+</div>
+
+Is there anything specific about your medications you'd like to know more about?`;
+                } else if (lowerMessage.includes('side effect')) {
+                    response = `Here are the common side effects for your current medications:
+
+**Metformin 500mg:**
+• Nausea or stomach upset (usually temporary)
+• Diarrhea
+• Metallic taste in mouth
+
+**Atorvastatin 20mg:**
+• Muscle aches or weakness
+• Headache
+• Digestive issues
+
+<div class="health-suggestions">
+    <div class="suggestion-header">
+        <span class="suggestion-icon">⚠️</span>
+        <span class="suggestion-title">Important</span>
+    </div>
+    <div class="suggestion-content">Contact Dr. Kumar immediately if you experience severe muscle pain, unusual fatigue, or persistent stomach problems.</div>
+</div>
+
+Most side effects are mild and improve over time. Are you experiencing any specific symptoms?`;
+                } else if (lowerMessage.includes('appointment')) {
+                    response = `Your next appointment is scheduled for:
+
+**Tomorrow, May 11, 2024 at 10:30 AM**
+📍 Dr. Rajesh Kumar - Cardiology Follow-up
+🏥 Apollo Hospital, Chennai
+
+**Upcoming:**
+📅 May 15, 2024 at 2:15 PM - Dr. Anita Desai (Endocrinology)
+
+Would you like me to help you prepare questions for your appointment or set a reminder?`;
+                } else if (lowerMessage.includes('blood sugar') || lowerMessage.includes('diabetes')) {
+                    response = `Here are some tips to help manage your blood sugar levels:
+
+🍽️ **Diet Tips:**
+• Eat regular, balanced meals
+• Choose complex carbohydrates over simple sugars
+• Include fiber-rich foods like vegetables and whole grains
+• Monitor portion sizes
+
+⏰ **Timing:**
+• Take your Metformin with meals as prescribed
+• Check blood sugar levels as recommended by Dr. Desai
+
+🏃‍♀️ **Lifestyle:**
+• Regular physical activity helps lower blood sugar
+• Stay hydrated with water
+• Get adequate sleep (7-8 hours)
+
+<div class="health-suggestions">
+    <div class="suggestion-header">
+        <span class="suggestion-icon">📊</span>
+        <span class="suggestion-title">Your Recent HbA1c</span>
+    </div>
+    <div class="suggestion-content">Your latest HbA1c was 6.8%. Dr. Desai mentioned this is slightly elevated and we're working to get it below 6.5%.</div>
+</div>
+
+Would you like specific meal suggestions or exercise recommendations?`;
+                } else if (lowerMessage.includes('test result') || lowerMessage.includes('lab')) {
+                    response = `Here's a summary of your recent test results from May 3, 2024:
+
+✅ **Complete Blood Count:** Normal
+✅ **Lipid Profile:** Normal  
+⚠️ **HbA1c:** 6.8% (slightly elevated)
+
+**What this means:**
+• Your blood count and cholesterol levels are well-controlled
+• Your average blood sugar over the past 3 months is slightly high
+• Target HbA1c for diabetes management is typically below 6.5%
+
+<div class="health-suggestions">
+    <div class="suggestion-header">
+        <span class="suggestion-icon">🎯</span>
+        <span class="suggestion-title">Next Steps</span>
+    </div>
+    <div class="suggestion-content">Dr. Desai will discuss adjusting your diabetes management plan during your May 15th appointment.</div>
+</div>
+
+Would you like me to explain any specific test values in more detail?`;
+                } else if (lowerMessage.includes('emergency')) {
+                    response = `**Emergency Contacts:**
+
+🚨 **Medical Emergency:** 108 (Ambulance)
+🏥 **Apollo Hospital Emergency:** +91-44-2829-3333
+👨‍⚕️ **Dr. Rajesh Kumar:** +91-98765-43210
+👩‍⚕️ **Dr. Anita Desai:** +91-98765-43211
+
+**When to seek immediate help:**
+• Severe chest pain or difficulty breathing
+• Blood sugar below 70 mg/dL or above 400 mg/dL
+• Severe allergic reactions
+• Persistent vomiting or inability to keep fluids down
+
+<div class="health-suggestions">
+    <div class="suggestion-header">
+        <span class="suggestion-icon">📱</span>
+        <span class="suggestion-title">Quick Access</span>
+    </div>
+    <div class="suggestion-content">Save these numbers in your phone for quick access. Your medical ID is PS-2024-0042.</div>
+</div>
+
+Is this a current emergency, or are you looking for general information?`;
+                } else if (lowerMessage.includes('missed dose')) {
+                    response = `**If you miss a dose:**
+
+**Metformin (morning dose):**
+• Take it as soon as you remember if it's within 4 hours
+• If it's almost time for your next dose, skip the missed dose
+• Never double up on doses
+
+**Atorvastatin (bedtime):**
+• Take it as soon as you remember, even if it's the next morning
+• If it's almost time for your next dose, skip the missed dose
+
+<div class="health-suggestions">
+    <div class="suggestion-header">
+        <span class="suggestion-icon">⏰</span>
+        <span class="suggestion-title">Prevention Tip</span>
+    </div>
+    <div class="suggestion-content">Set phone alarms or use a pill organizer to help remember your medications. The Medora app can also send you reminders!</div>
+</div>
+
+Did you miss a dose today, or are you planning ahead?`;
+                } else {
+                    response = `I understand you're asking about "${userMessage}". I'm here to help with your health-related questions!
+
+I can assist you with:
+• Information about your medications and prescriptions
+• Explaining your test results and health metrics
+• Appointment scheduling and reminders
+• Diet and lifestyle recommendations for diabetes management
+• Understanding side effects and when to contact your doctors
+
+<div class="health-suggestions">
+    <div class="suggestion-header">
+        <span class="suggestion-icon">💬</span>
+        <span class="suggestion-title">Tip</span>
+    </div>
+    <div class="suggestion-content">Try asking more specific questions like "What should I eat for breakfast?" or "When should I take my medications?"</div>
+</div>
+
+What specific health topic would you like to know more about?`;
+                }
+
+                addMessage(response, 'ai');
+            }
+
+            function startRecording() {
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '⏹️';
+                
+                // Simulate voice recording
+                setTimeout(() => {
+                    stopRecording();
+                    chatInput.value = "What are the side effects of my medications?";
+                    chatInput.dispatchEvent(new Event('input'));
+                }, 3000);
+            }
+
+            function stopRecording() {
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '🎤';
+            }
+
+            // Global function for quick messages
+            window.sendQuickMessage = function(message) {
+                chatInput.value = message;
+                sendMessage();
+            };
+        });
+    </script>
+</body>
+</html>
