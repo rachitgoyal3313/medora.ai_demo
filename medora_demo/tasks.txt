@@ -1,0 +1,5 @@
+1. login page and register page and make them working as well
+2. patient dashboard along with appointment booking, prescriptions
+3. doctor dashboard with voice to text and appointments etc.
+4. chatbot for rural areas that supports multiple languages along with voice
+5. implement OCR for prescriptions' scanning
