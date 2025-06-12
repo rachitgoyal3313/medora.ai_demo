@@ -3,3 +3,4 @@
 3. doctor dashboard with voice to text and appointments etc.
 4. chatbot for rural areas that supports multiple languages along with voice
 5. implement OCR for prescriptions' scanning
+6. implement the logo everywhere
