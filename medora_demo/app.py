@@ -9,10 +9,17 @@ import os
 import random
 from datetime import datetime
 from flask_socketio import SocketIO, emit
-from voice import initialize_voice_service, get_voice_service, register_socketio_handlers
 import io
 import json
 import logging
+
+from voice import (
+    initialize_voice_service,
+    start_voice_recognition,
+    stop_voice_recognition,
+    get_latest_transcription,
+    clear_transcription_data
+)
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -33,8 +40,7 @@ db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
-voice_service = initialize_voice_service(socketio)
-register_socketio_handlers(socketio)
+initialize_voice_service(socketio)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -359,13 +365,11 @@ def ocr_prescriptions():
                 flash('No file uploaded.', 'danger')
                 return redirect(url_for('ocr_prescriptions'))
             
-            # Mock OCR processing (replace with actual OCR logic if available)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"prescription_scan_{timestamp}.jpg"
             filepath = os.path.join(PRESCRIPTIONS_DIR, filename)
             file.save(filepath)
             
-            # Mock extracted data
             medications = [
                 {
                     "name": "Metformin 500mg",
@@ -405,7 +409,6 @@ def ocr_prescriptions():
             flash(f'Error processing upload: {str(e)}', 'danger')
             return redirect(url_for('ocr_prescriptions'))
     
-    # Fetch recent prescriptions
     recent_prescriptions = Prescription.query.filter_by(user_id=user.id).order_by(Prescription.date.desc()).limit(3).all()
     return render_template('ocr_prescriptions.html', user=user, recent_prescriptions=recent_prescriptions)
 
@@ -516,7 +519,6 @@ def export_prescription():
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Generating HTML
         html_content = f"""
         <div class="prescription-header">
             <div class="doctor-info">
@@ -531,7 +533,8 @@ def export_prescription():
         <div class="patient-info">
             <div class="patient-name">Patient: [Extracted from voice]</div>
             <div class="patient-details">Voice input: {transcription[:100]}...</div>
-       green">
+        </div>
+        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-top: 20px;">
             <p>Prescription details extracted from voice input will appear here.</p>
             <p>For demo purposes, showing the transcription:</p>
             <p style="font-style: italic;">{transcription}</p>
@@ -543,7 +546,6 @@ def export_prescription():
         </div>
         """
         
-        # Generating Text
         text_content = f"""Prescription
 Date: {datetime.now().strftime('%B %d, %Y')}
 Doctor: Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}
@@ -555,7 +557,6 @@ Prescription Details: {transcription}
         with open(text_filename, 'w', encoding='utf-8') as f:
             f.write(text_content)
         
-        # Generating JSON
         json_content = {
             "date": datetime.now().strftime('%B %d, %Y'),
             "doctor": f"Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}",
@@ -567,7 +568,6 @@ Prescription Details: {transcription}
         with open(json_filename, 'w', encoding='utf-8') as f:
             json.dump(json_content, f, indent=2)
         
-        # Generating PDF with LaTeX
         latex_content = r"""
         \documentclass[a4paper,12pt]{article}
         \usepackage[utf8]{inputenc}
@@ -612,6 +612,50 @@ def serve_static(filename):
     except FileNotFoundError:
         logger.error(f'Static file not found: {filename}')
         return jsonify({'error': 'File not found'}), 404
+
+@app.route('/start_recording', methods=['POST'])
+@csrf.exempt
+def start_recording_route():
+    success = start_voice_recognition()
+    return jsonify({'success': success}), 200 if success else 500
+
+@app.route('/stop_recording', methods=['POST'])
+@csrf.exempt
+def stop_recording_route():
+    transcription = stop_voice_recognition()
+    return jsonify({'transcription': transcription}), 200
+
+@app.route('/get_transcription', methods=['GET'])
+@csrf.exempt
+def get_transcription():
+    transcription = get_latest_transcription()
+    return jsonify({'transcription': transcription}), 200
+
+@app.route('/clear_recording', methods=['POST'])
+@csrf.exempt
+def clear_recording():
+    clear_transcription_data()
+    return jsonify({'success': True}), 200
+
+# SocketIO event handlers
+@socketio.on('connect', namespace='/voice')
+def handle_voice_connect():
+    logger.debug('Client connected to /voice namespace')
+    emit('status', {'message': 'Connected to voice service'})
+
+@socketio.on('start_recording', namespace='/voice')
+def handle_start_recording():
+    logger.debug('Starting voice recognition')
+    if start_voice_recognition():
+        emit('status', {'message': 'Recording started'})
+    else:
+        emit('error', {'message': 'Failed to start recording'})
+
+@socketio.on('stop_recording', namespace='/voice')
+def handle_stop_recording():
+    logger.debug('Stopping voice recognition')
+    transcription = stop_voice_recognition()
+    emit('status', {'message': 'Recording stopped', 'transcription': transcription})
 
 with app.app_context():
     db.create_all()

@@ -4,1068 +4,231 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speak to Prescribe - Medora.ai</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-            font-weight: 500;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .dashboard-container {
-            display: flex;
-            height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: white;
-            border-right: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 24px 0;
-            height: 100vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            z-index: 10;
-        }
-
-        .logo {
-            padding: 0 24px 32px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            margin-bottom: 32px;
-        }
-
-        .logo h1 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logo-icon {
-            font-size: 20px;
-        }
-
-        .nav-menu {
-            list-style: none;
-            padding: 0 16px;
-        }
-
-        .nav-item {
-            margin-bottom: 8px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            color: #666;
-            text-decoration: none;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            gap: 12px;
-            font-size: 14px;
-        }
-
-        .nav-link:hover {
-            background: #f8f9fa;
-            color: #333;
-            transform: translateY(-1px);
-        }
-
-        .nav-link.active {
-            background: #333;
-            color: white;
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 24px;
-            height: 100vh;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 24px;
-            flex-shrink: 0;
-        }
-
-        .header h1 {
-            font-size: 32px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #2e7d32;
-            animation: pulse 2s infinite;
-        }
-
-        .status-text {
-            font-size: 14px;
-            color: #2e7d32;
-            font-weight: 600;
-        }
-
-        /* Voice Interface */
-        .voice-container {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            min-height: 0;
-        }
-
-        .voice-input-section {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .voice-interface {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 400px;
-        }
-
-        .voice-button {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #333, #555);
-            border: none;
-            color: white;
-            font-size: 48px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .voice-button:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .voice-button.recording {
-            background: linear-gradient(135deg, #ff4757, #ff6b7a);
-            animation: recordingPulse 1.5s infinite;
-        }
-
-        .voice-button.processing {
-            background: linear-gradient(135deg, #3742fa, #5352ed);
-            animation: processingRotate 2s linear infinite;
-        }
-
-        @keyframes recordingPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        @keyframes processingRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .voice-status {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .voice-instruction {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 20px;
-            max-width: 300px;
-        }
-
-        .voice-controls {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .control-btn {
-            padding: 8px 16px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 20px;
-            background: white;
-            color: #333;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .control-btn:hover {
-            background: #f8f9fa;
-            transform: translateY(-1px);
-        }
-
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Transcription Display */
-        .transcription-display {
-            background: #f8f9fa;
-            border-radius: 12px;
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
             padding: 20px;
-            margin-top: 20px;
-            min-height: 120px;
-            border: 2px dashed #ddd;
-            transition: all 0.3s ease;
         }
-
-        .transcription-display.active {
-            border-color: #333;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
             background: white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-
-        .transcription-text {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-            min-height: 80px;
-            white-space: pre-wrap;
-        }
-
-        .transcription-placeholder {
-            color: #999;
-            font-style: italic;
-            text-align: center;
-            padding: 30px 0;
-        }
-
-        /* Prescription Output */
-        .prescription-output {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .prescription-content {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .prescription-header {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .doctor-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .doctor-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #333;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-        }
-
-        .doctor-details h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .doctor-details p {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .prescription-date {
-            font-size: 12px;
-            color: #666;
-            text-align: right;
-            margin-top: 8px;
-        }
-
-        .patient-info {
-            background: #e3f2fd;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .patient-name {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1976d2;
-            margin-bottom: 4px;
-        }
-
-        .patient-details {
-            font-size: 14px;
-            color: #333;
-        }
-
-        .medications-section {
-            margin-bottom: 20px;
-        }
-
-        .medication-item {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border-left: 4px solid #333;
-        }
-
-        .medication-name {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .medication-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .detail-label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .detail-value {
-            color: #333;
-            font-weight: 600;
-        }
-
-        .prescription-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 25px;
-            background: white;
-            color: #333;
-            text-decoration: none;
-            text-align: center;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s ease;
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
-
-        .action-btn:hover {
-            background: #f8f9fa;
-            transform: translateY(-1px);
-        }
-
-        .action-btn.primary {
-            background: #333;
-            color: white;
-            border-color: #333;
-        }
-
-        .action-btn.primary:hover {
-            background: #555;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .empty-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .empty-subtitle {
-            font-size: 14px;
-        }
-
-        /* Audio Waveform Animation */
-        .audio-waveform {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            margin: 20px 0;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .audio-waveform.active {
-            opacity: 1;
-        }
-
-        .wave-bar {
-            width: 3px;
-            height: 20px;
-            background: #333;
-            border-radius: 2px;
-            animation: waveAnimation 1.5s infinite ease-in-out;
-        }
-
-        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
-        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
-        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
-        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
-
-        @keyframes waveAnimation {
-            0%, 40%, 100% { transform: scaleY(0.4); }
-            20% { transform: scaleY(1); }
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            width: 400px;
-            max-width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-content h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .modal-content p {
-            margin-bottom: 15px;
-            color: #666;
-        }
-
-        .download-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-
-        .download-link {
-            padding: 10px 15px;
+        #transcription {
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
             background: #f8f9fa;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            color: #333;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
         }
-
-        .download-link:hover {
-            background: #eee;
-            transform: translateY(-2px);
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+        #prescriptionOutput {
             margin-top: 20px;
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .voice-container {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .main-content {
-                padding: 16px;
-            }
-
-            .voice-button {
-                width: 100px;
-                height: 100px;
-                font-size: 40px;
-            }
-
-            .medication-details {
-                grid-template-columns: 1fr;
-            }
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <h1>
-                    <span class="logo-icon">🏥</span>
-                    Medora.ai
-                </h1>
+    <div class="container">
+        <h1 class="text-2xl font-bold mb-4">Speak to Prescribe</h1>
+        <p class="text-gray-600 mb-4">Speak your prescription, and it will appear below.</p>
+
+        <!-- Voice Input Section -->
+        <div class="mb-6">
+            <h3 class="text-lg font-medium mb-2">Voice Input</h3>
+            <div class="flex items-center gap-4 mb-4">
+                <button id="micButton" class="btn bg-blue-500 text-white hover:bg-blue-600">
+                    🎤 Start Recording
+                </button>
+                <span id="micStatus" class="text-gray-600">Ready to Listen</span>
             </div>
-            
-            <nav>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="{{ url_for('doctor_dashboard') }}" class="nav-link"></a>
-                            <span class="nav-icon">📊</span>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span class="nav-icon">👥</span>
-                            Patients
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span class="nav-icon">📅</span>
-                            Appointments
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span class="nav-icon">💊</span>
-                            Prescriptions
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="speak_to_prescribe.html" class="nav-link active">
-                            <span class="nav-icon">🎤</span>
-                            Speak to Prescribe
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span class="nav-icon">📋</span>
-                            Medical Records
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span class="nav-icon">📈</span>
-                            Analytics
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span class="nav-icon">⚙️</span>
-                            Settings
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <h1>Speak to Prescribe</h1>
-                <p>Use voice commands to create prescriptions quickly and accurately</p>
-                <div class="status-indicator">
-                    <div class="status-dot"></div>
-                    <span class="status-text" id="statusText">Connecting...</span>
-                </div>
-            </header>
-
-            <!-- Voice Interface Container -->
-            <div class="voice-container">
-                <!-- Voice Input Section -->
-                <div class="voice-input-section">
-                    <h2 class="section-title">Voice Input</h2>
-                    
-                    <div class="voice-interface">
-                        <button class="voice-button" id="voiceButton">
-                            🎤
-                        </button>
-                        
-                        <div class="voice-status" id="voiceStatus">Ready to Listen</div>
-                        <div class="voice-instruction" id="voiceInstruction">
-                            Click the microphone and speak your prescription. Say something like: "Prescribe Metformin 500mg, one tablet twice daily after meals for 30 days"
-                        </div>
-
-                        <div class="audio-waveform" id="audioWaveform">
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                        </div>
-
-                        <div class="voice-controls">
-                            <button class="control-btn" id="clearBtn">Clear</button>
-                            <button class="control-btn" id="retryBtn">Retry</button>
-                            <button class="control-btn" id="processBtn">Process</button>
-                        </div>
-                    </div>
-
-                    <div class="transcription-display" id="transcriptionDisplay">
-                        <div class="transcription-placeholder" id="transcriptionPlaceholder">
-                            Your speech will appear here as you speak...
-                        </div>
-                        <div class="transcription-text" id="transcriptionText"></div>
-                    </div>
-                </div>
-
-                <!-- Prescription Output Section -->
-                <div class="prescription-output">
-                    <h2 class="section-title">Generated Prescription</h2>
-                    
-                    <div class="prescription-content" id="prescriptionContent">
-                        <div class="empty-state">
-                            <div class="empty-icon">📋</div>
-                            <div class="empty-title">No Prescription Yet</div>
-                            <div class="empty-subtitle">Start speaking to generate a prescription</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex gap-2">
+                <button id="clearButton" class="btn bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    Clear
+                </button>
+                <button id="retryButton" class="btn bg-yellow-500 text-white hover:bg-yellow-600">
+                    Retry
+                </button>
+                <button id="processButton" class="btn bg-green-500 text-white hover:bg-green-600">
+                    Process
+                </button>
             </div>
-        </main>
-    </div>
-
-    <!-- Export Modal -->
-    <div id="export-modal" class="modal">
-        <div class="modal-content">
-            <h3>Export Prescription</h3>
-            <p>Select a format to download:</p>
-            <div class="download-options">
-                <a id="download-text" href="#" download="prescription.txt" class="download-link">
-                    <span>📄</span> Download Text
-                </a>
-                <a id="download-pdf" href="#" download="prescription.pdf" class="download-link">
-                    <span>📑</span> Download PDF
-                </a>
-                <a id="download-json" href="#" download="prescription.json" class="download-link">
-                    <span>🔢</span> Download JSON
-                </a>
+            <div id="transcription" class="mt-4">
+                Your speech will appear here as you speak...
             </div>
-            <p>Would you like to print the prescription?</p>
-            <div class="modal-actions">
-                <button id="print-btn" class="action-btn primary">Print</button>
-                <button id="cancel-btn" class="action-btn">Cancel</button>
+        </div>
+
+        <!-- Generated Prescription Section -->
+        <div>
+            <h3 class="text-lg font-medium mb-2">Generated Prescription</h3>
+            <div id="prescriptionOutput">
+                <p>No prescription generated yet.</p>
             </div>
         </div>
     </div>
 
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const socket = io.connect('http://' + document.domain + ':' + location.port);
-            let lastPartialTranscript = '';
-            let lastPartialLength = 0;
-            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
-            
-            // UI Elements
-            const voiceButton = document.getElementById('voiceButton');
-            const voiceStatus = document.getElementById('voiceStatus');
-            const voiceInstruction = document.getElementById('voiceInstruction');
-            const audioWaveform = document.getElementById('audioWaveform');
-            const transcriptionDisplay = document.getElementById('transcriptionDisplay');
-            const transcriptionText = document.getElementById('transcriptionText');
-            const transcriptionPlaceholder = document.getElementById('transcriptionPlaceholder');
-            const prescriptionContent = document.getElementById('prescriptionContent');
-            const clearBtn = document.getElementById('clearBtn');
-            const retryBtn = document.getElementById('retryBtn');
-            const processBtn = document.getElementById('processBtn');
-            const statusText = document.getElementById('statusText');
-            
-            let isRecording = false;
+        // Initialize Socket.IO connection
+        const socket = io({
+            path: '/socket.io',
+            transports: ['websocket'],
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
+        });
 
-            // Socket.IO event handlers
-            socket.on('connect', () => {
-                console.log('Socket.IO connected');
-                statusText.textContent = 'Voice Recognition Ready';
-                statusText.style.color = '#2e7d32';
-            });
+        const micButton = document.getElementById('micButton');
+        const clearButton = document.getElementById('clearButton');
+        const retryButton = document.getElementById('retryButton');
+        const processButton = document.getElementById('processButton');
+        const micStatus = document.getElementById('micStatus');
+        const transcription = document.getElementById('transcription');
+        const prescriptionOutput = document.getElementById('prescriptionOutput');
+        let isRecording = false;
 
-            socket.on('voice_status', (data) => {
-                const status = data.status.charAt(0).toUpperCase() + data.status.slice(1);
-                statusText.innerText = `Voice Recognition ${status}`;
-                voiceStatus.innerText = status;
-                
-                if (data.status === 'connected') {
-                    statusText.style.color = '#2e7d32';
-                    voiceStatus.style.color = '#2e7d32';
-                } else if (data.status === 'recording') {
-                    statusText.style.color = '#007bff';
-                    voiceStatus.style.color = '#007bff';
-                    voiceButton.classList.add('recording');
-                    voiceButton.innerHTML = '⏹️';
-                    audioWaveform.classList.add('active');
-                    isRecording = true;
-                } else if (data.status === 'processing') {
-                    statusText.style.color = '#ffc107';
-                    voiceStatus.style.color = '#ffc107';
-                } else if (data.status === 'disconnected') {
-                    statusText.style.color = '#dc3545';
-                    voiceStatus.style.color = '#dc3545';
-                    voiceButton.classList.remove('recording');
-                    voiceButton.innerHTML = '🎤';
-                    audioWaveform.classList.remove('active');
-                    isRecording = false;
-                    
-                    if (data.final_transcript) {
-                        updateTranscription(data.final_transcript);
-                    }
-                }
-            });
+        // Handle connection events
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            micStatus.textContent = 'Ready to Listen';
+        });
 
-            socket.on('voice_error', (data) => {
-                statusText.innerText = 'Error: ' + data.error;
-                statusText.style.color = '#dc3545';
-                voiceStatus.innerText = 'Error';
-                voiceStatus.style.color = '#dc3545';
-                voiceInstruction.textContent = data.error;
-                voiceInstruction.style.color = '#dc3545';
-                
-                voiceButton.classList.remove('recording');
-                voiceButton.innerHTML = '🎤';
-                audioWaveform.classList.remove('active');
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            micStatus.textContent = 'Disconnected';
+            if (isRecording) {
                 isRecording = false;
-            });
-
-            socket.on('transcription_update', (data) => {
-                updateTranscription(data.transcript);
-            });
-
-            socket.on('transcription_partial', (data) => {
-                if (data.transcript && data.transcript !== lastPartialTranscript) {
-                    updatePartialTranscription(data.transcript);
-                }
-            });
-
-            // Voice button click handler
-            voiceButton.addEventListener('click', () => {
-                if (!isRecording) {
-                    startRecording();
-                } else {
-                    stopRecording();
-                }
-            });
-
-            // Control button handlers
-            clearBtn.addEventListener('click', clearAll);
-            retryBtn.addEventListener('click', startRecording);
-            processBtn.addEventListener('click', processPrescription);
-
-            function startRecording() {
-                transcriptionDisplay.classList.add('active');
-                transcriptionPlaceholder.style.display = 'none';
-                transcriptionText.style.display = 'block';
-                transcriptionText.textContent = '';
-                
-                voiceStatus.textContent = 'Starting...';
-                voiceInstruction.textContent = 'Initializing voice recognition...';
-                
-                socket.emit('start_recording');
+                micButton.textContent = '🎤 Start Recording';
+                micButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                micButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
             }
+        });
 
-            function stopRecording() {
-                voiceStatus.textContent = 'Stopping...';
-                voiceInstruction.textContent = 'Finalizing transcription...';
-                audioWaveform.classList.remove('active');
-                
-                socket.emit('stop_recording', (response) => {
-                    console.log('Stop recording response:', response);
-                    voiceButton.classList.remove('recording');
-                    voiceButton.innerHTML = '🎤';
-                    isRecording = false;
+        socket.on('connect_error', (error) => {
+            console.error('Connection Error:', error);
+            micStatus.textContent = 'Connection Error';
+        });
+
+        // Handle voice namespace events
+        const voiceSocket = io('/voice');
+
+        voiceSocket.on('connect', () => {
+            console.log('Connected to /voice namespace');
+            micStatus.textContent = 'Ready to Listen';
+        });
+
+        voiceSocket.on('status', (data) => {
+            console.log('Status received:', data);
+            micStatus.textContent = data.message;
+            if (data.message === 'Recording started') {
+                micButton.textContent = '🎤 Stop Recording';
+                micButton.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                micButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                isRecording = true;
+            } else if (data.message === 'Recording stopped') {
+                micButton.textContent = '🎤 Start Recording';
+                micButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                micButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                isRecording = false;
+                if (data.transcription) {
+                    transcription.textContent = data.transcription || 'No transcription available';
+                }
+            }
+        });
+
+        voiceSocket.on('error', (data) => {
+            console.error('Error received:', data);
+            micStatus.textContent = data.message || 'Error occurred';
+            if (isRecording) {
+                isRecording = false;
+                micButton.textContent = '🎤 Start Recording';
+                micButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                micButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            }
+        });
+
+        voiceSocket.on('transcription_update', (data) => {
+            console.log('Transcription update:', data);
+            if (data.transcription) {
+                transcription.textContent = data.transcription;
+            }
+        });
+
+        // Button event handlers
+        micButton.addEventListener('click', () => {
+            if (!isRecording) {
+                voiceSocket.emit('start_recording');
+            } else {
+                voiceSocket.emit('stop_recording');
+            }
+        });
+
+        clearButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/clear_recording', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
                 });
-            }
-
-            function updateTranscription(text) {
-                if (!text) return;
-                
-                transcriptionPlaceholder.style.display = 'none';
-                transcriptionText.style.display = 'block';
-                transcriptionText.textContent = text;
-                lastPartialTranscript = '';
-                lastPartialLength = 0;
-            }
-
-            function updatePartialTranscription(text) {
-                if (!text) return;
-                
-                transcriptionPlaceholder.style.display = 'none';
-                transcriptionText.style.display = 'block';
-                
-                const currentText = transcriptionText.textContent;
-                if (lastPartialLength > 0) {
-                    transcriptionText.textContent = currentText.slice(0, -lastPartialLength) + text;
-                } else {
-                    transcriptionText.textContent = currentText ? currentText + ' ' + text : text;
+                if (response.ok) {
+                    transcription.textContent = 'Your speech will appear here as you speak...';
+                    prescriptionOutput.innerHTML = '<p>No prescription generated yet.</p>';
                 }
-                
-                lastPartialTranscript = text;
-                lastPartialLength = text.length;
+            } catch (error) {
+                console.error('Error clearing recording:', error);
             }
+        });
 
-            function processPrescription() {
-                const transcription = transcriptionText.textContent;
-                if (transcription && transcription !== '') {
-                    voiceButton.classList.add('processing');
-                    voiceButton.innerHTML = '⚙️';
-                    voiceStatus.textContent = 'Generating Prescription...';
-                    voiceInstruction.textContent = 'AI is analyzing your speech and creating the prescription...';
-                    statusText.textContent = 'Generating Prescription';
-                    
-                    fetch('/export_prescription', {
+        retryButton.addEventListener('click', async () => {
+            if (isRecording) {
+                voiceSocket.emit('stop_recording');
+            }
+            try {
+                await fetch('/clear_recording', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                voiceSocket.emit('start_recording');
+            } catch (error) {
+                console.error('Error retrying recording:', error);
+            }
+        });
+
+        processButton.addEventListener('click', async () => {
+            const text = transcription.textContent;
+            if (text && text !== 'Your speech will appear here as you speak...') {
+                try {
+                    const response = await fetch('/process_prescription', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: JSON.stringify({ transcription: transcription })
-                    })
-                    .then(response => {
-                        console.log('Response status:', response.status);
-                        if (!response.ok) {
-                            return response.text().then(text => {
-                                console.error('Non-JSON response:', text);
-                                throw new Error(`HTTP ${response.status}: ${text}`);
-                            });
-                        }
-                        if (response.headers.get('content-type').includes('application/json')) {
-                            return response.json();
-                        } else {
-                            return response.text().then(text => {
-                                console.error('Unexpected response:', text);
-                                throw new Error('Expected JSON but received non-JSON response');
-                            });
-                        }
-                    })
-                    .then(data => {
-                        voiceButton.classList.remove('processing');
-                        voiceButton.innerHTML = '🎤';
-                        voiceStatus.textContent = 'Prescription Generated';
-                        voiceInstruction.textContent = 'Prescription has been created successfully. You can now save, print, or send it.';
-                        statusText.textContent = 'Prescription Ready';
-                        
-                        if (data.error) {
-                            throw new Error(data.error);
-                        }
-                        
-                        prescriptionContent.innerHTML = data.html;
-                        showExportModal(data.text_url, data.pdf_url, data.json_url);
-                    })
-                    .catch(error => {
-                        console.error('Error processing prescription:', error);
-                        voiceButton.classList.remove('processing');
-                        voiceButton.innerHTML = '🎤';
-                        voiceStatus.textContent = 'Error';
-                        voiceStatus.style.color = '#dc3545';
-                        voiceInstruction.textContent = 'Failed to process prescription. Please try again.';
-                        voiceInstruction.style.color = '#dc3545';
-                        
-                        prescriptionContent.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">❌</div>
-                                <div class="empty-title">Error Processing Prescription</div>
-                                <div class="empty-subtitle">${error.message}. Please ensure you are logged in as a doctor and try again.</div>
-                            </div>
-                        `;
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transcription: text })
                     });
-                } else {
-                    alert('No transcription available to process.');
+                    const data = await response.json();
+                    if (data.html) {
+                        prescriptionOutput.innerHTML = data.html;
+                    } else {
+                        prescriptionOutput.innerHTML = `<p>Error: ${data.error || 'Unknown error'}</p>`;
+                    }
+                } catch (error) {
+                    console.error('Error processing prescription:', error);
+                    prescriptionOutput.innerHTML = `<p>Error processing prescription: ${error.message}</p>`;
                 }
+            } else {
+                prescriptionOutput.innerHTML = '<p>Please speak a prescription first.</p>';
             }
-
-            function clearAll() {
-                // Stop any ongoing recording
-                if (isRecording) {
-                    stopRecording();
-                }
-                
-                // Reset UI
-                transcriptionPlaceholder.style.display = 'block';
-                transcriptionText.style.display = 'none';
-                transcriptionText.textContent = '';
-                transcriptionDisplay.classList.remove('active');
-                
-                prescriptionContent.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📋</div>
-                        <div class="empty-title">No Prescription Yet</div>
-                        <div class="empty-subtitle">Start speaking to generate a prescription</div>
-                    </div>
-                `;
-                
-                voiceStatus.textContent = 'Ready to Listen';
-                voiceStatus.style.color = '#333';
-                voiceInstruction.textContent = 'Click the microphone and speak your prescription. Say something like: "Prescribe Metformin 500mg, one tablet twice daily after meals for 30 days"';
-                voiceInstruction.style.color = '#666';
-                statusText.textContent = 'Voice Recognition Ready';
-                statusText.style.color = '#2e7d32';
-                
-                lastPartialTranscript = '';
-                lastPartialLength = 0;
-            }
-
-            function showExportModal(textUrl, pdfUrl, jsonUrl) {
-                const modal = document.getElementById('export-modal');
-                const textLink = document.getElementById('download-text');
-                const pdfLink = document.getElementById('download-pdf');
-                const jsonLink = document.getElementById('download-json');
-                
-                textLink.href = textUrl;
-                pdfLink.href = pdfUrl;
-                jsonLink.href = jsonUrl;
-                
-                modal.style.display = 'flex';
-
-                document.getElementById('print-btn').addEventListener('click', () => {
-                    window.print();
-                    modal.style.display = 'none';
-                });
-
-                document.getElementById('cancel-btn').addEventListener('click', () => {
-                    modal.style.display = 'none';
-                });
-            }
-
-            // Global functions for prescription actions
-            window.savePrescription = function() {
-                alert('Prescription saved successfully!');
-            };
-
-            window.printPrescription = function() {
-                window.print();
-            };
-
-            window.sendPrescription = function() {
-                alert('Prescription sent to patient via SMS and email!');
-            };
         });
     </script>
 </body>
