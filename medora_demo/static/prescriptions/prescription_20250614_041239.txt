@@ -1,0 +1,6 @@
+Prescription
+Date: June 14, 2025
+Doctor: Dr. Rachit Go
+Specialization: dermatology
+Patient: [Extracted from voice]
+Prescription Details: This is kanchin.
