@@ -25,8 +25,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-# Create static directory if it doesn't exist
-os.makedirs('static', exist_ok=True)
+# Create static/prescriptions directory if it doesn't exist
+PRESCRIPTIONS_DIR = os.path.join('static', 'prescriptions')
+os.makedirs(PRESCRIPTIONS_DIR, exist_ok=True)
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
@@ -48,6 +49,18 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     receive_updates = db.Column(db.Boolean, default=False)
     role = db.Column(db.String(50), nullable=False)
+
+class Prescription(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    doctor_name = db.Column(db.String(100))
+    doctor_specialization = db.Column(db.String(100))
+    registration_number = db.Column(db.String(50))
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    medications = db.Column(db.Text)  # JSON string for medications
+    additional_instructions = db.Column(db.Text)
+    accuracy = db.Column(db.Float)
+    status = db.Column(db.String(50), default='Processed')
 
 class LoginForm(FlaskForm):
     email = StringField('Email Address', validators=[DataRequired(), Email()])
@@ -109,6 +122,15 @@ def ai_diagnosis():
 def ai_admin_insight():
     insights = ["Optimize staff scheduling", "Review inventory levels"]
     return random.choice(insights)
+
+def ai_chat_response(query):
+    responses = {
+        "moral dilemma": "Exploring when lying might be justified involves weighing the consequences and intentions behind the act. Would you like to discuss a specific scenario?",
+        "philosophy": "What makes life meaningful varies across perspectives—some find it in relationships, others in purpose or achievement. What's your view on this?",
+        "tech ethics": "AI in decision-making raises questions about accountability and bias. Would you like to explore a particular aspect, like AI in healthcare?",
+        "personal ethics": "Reflecting on moral decisions can clarify your values. Want to discuss a recent decision you made?"
+    }
+    return responses.get(query.lower(), "I'm here to help with your health or ethical questions. Could you clarify or ask something specific?")
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
@@ -323,6 +345,94 @@ def staff_dashboard():
     insight = ai_admin_insight()
     return render_template('staff_dashboard.html', schedule=schedule, insight=insight)
 
+@app.route('/ocr_prescriptions', methods=['GET', 'POST'])
+def ocr_prescriptions():
+    if 'user_id' not in session or session.get('role') != 'patient':
+        flash('Please log in as a patient to access this feature.', 'danger')
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    if request.method == 'POST':
+        try:
+            file = request.files.get('prescription_file')
+            if not file:
+                flash('No file uploaded.', 'danger')
+                return redirect(url_for('ocr_prescriptions'))
+            
+            # Mock OCR processing (replace with actual OCR logic if available)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"prescription_scan_{timestamp}.jpg"
+            filepath = os.path.join(PRESCRIPTIONS_DIR, filename)
+            file.save(filepath)
+            
+            # Mock extracted data
+            medications = [
+                {
+                    "name": "Metformin 500mg",
+                    "dosage": "1 tablet",
+                    "frequency": "Twice daily",
+                    "duration": "30 days",
+                    "instructions": "After meals"
+                },
+                {
+                    "name": "Atorvastatin 20mg",
+                    "dosage": "1 tablet",
+                    "frequency": "Once daily",
+                    "duration": "30 days",
+                    "instructions": "At bedtime"
+                }
+            ]
+            prescription = Prescription(
+                user_id=user.id,
+                doctor_name="Dr. Rajesh Kumar",
+                doctor_specialization="Cardiology",
+                registration_number="MH-12345",
+                date=datetime.now(),
+                medications=json.dumps(medications),
+                additional_instructions="Take medications as prescribed. Monitor blood sugar levels regularly. Follow up in 2 weeks for review.",
+                accuracy=94.0,
+                status="Processed"
+            )
+            db.session.add(prescription)
+            db.session.commit()
+            
+            flash('Prescription uploaded and processed successfully.', 'success')
+            return redirect(url_for('ocr_prescriptions'))
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f'Error processing prescription upload: {str(e)}')
+            flash(f'Error processing upload: {str(e)}', 'danger')
+            return redirect(url_for('ocr_prescriptions'))
+    
+    # Fetch recent prescriptions
+    recent_prescriptions = Prescription.query.filter_by(user_id=user.id).order_by(Prescription.date.desc()).limit(3).all()
+    return render_template('ocr_prescriptions.html', user=user, recent_prescriptions=recent_prescriptions)
+
+@app.route('/medora_chat', methods=['GET', 'POST'])
+def medora_chat():
+    if 'user_id' not in session or session.get('role') != 'patient':
+        flash('Please log in as a patient to access this feature.', 'danger')
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    if request.method == 'POST':
+        try:
+            query = request.form.get('query')
+            if not query:
+                flash('Please enter a query.', 'danger')
+                return redirect(url_for('medora_chat'))
+            
+            response = ai_chat_response(query)
+            return render_template('medora_chat.html', user=user, response=response, query=query)
+        
+        except Exception as e:
+            logger.error(f'Error processing chat query: {str(e)}')
+            flash(f'Error processing query: {str(e)}', 'danger')
+            return redirect(url_for('medora_chat'))
+    
+    return render_template('medora_chat.html', user=user)
+
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
@@ -421,8 +531,7 @@ def export_prescription():
         <div class="patient-info">
             <div class="patient-name">Patient: [Extracted from voice]</div>
             <div class="patient-details">Voice input: {transcription[:100]}...</div>
-        </div>
-        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-top: 20px;">
+       green">
             <p>Prescription details extracted from voice input will appear here.</p>
             <p>For demo purposes, showing the transcription:</p>
             <p style="font-style: italic;">{transcription}</p>
@@ -442,7 +551,7 @@ Specialization: {doctor.specialization if doctor.specialization else 'General Me
 Patient: [Extracted from voice]
 Prescription Details: {transcription}
 """
-        text_filename = f"static/prescription_{timestamp}.txt"
+        text_filename = os.path.join(PRESCRIPTIONS_DIR, f"prescription_{timestamp}.txt")
         with open(text_filename, 'w', encoding='utf-8') as f:
             f.write(text_content)
         
@@ -454,7 +563,7 @@ Prescription Details: {transcription}
             "patient": "[Extracted from voice]",
             "prescription_details": transcription
         }
-        json_filename = f"static/prescription_{timestamp}.json"
+        json_filename = os.path.join(PRESCRIPTIONS_DIR, f"prescription_{timestamp}.json")
         with open(json_filename, 'w', encoding='utf-8') as f:
             json.dump(json_content, f, indent=2)
         
@@ -480,7 +589,7 @@ Prescription Details: {transcription}
 
         \end{document}
         """
-        latex_filename = f"static/prescription_{timestamp}.tex"
+        latex_filename = os.path.join(PRESCRIPTIONS_DIR, f"prescription_{timestamp}.tex")
         with open(latex_filename, 'w', encoding='utf-8') as f:
             f.write(latex_content)
         
@@ -499,7 +608,7 @@ Prescription Details: {transcription}
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     try:
-        return send_file(f"static/{filename}")
+        return send_file(os.path.join('static', filename))
     except FileNotFoundError:
         logger.error(f'Static file not found: {filename}')
         return jsonify({'error': 'File not found'}), 404

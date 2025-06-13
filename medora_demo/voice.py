@@ -13,7 +13,7 @@ import base64
 
 # --- Configuration ---
 YOUR_API_KEY = os.environ.get("ASSEMBLY_AI_API_KEY", "09b245d3b30b4fe5becbad104aaa0204")  # Fallback to default if not set
-
+print(YOUR_API_KEY)
 CONNECTION_PARAMS = {
     "sample_rate": 16000,
     "format_turns": True,
@@ -26,9 +26,9 @@ SAMPLE_RATE = CONNECTION_PARAMS["sample_rate"]
 CHANNELS = 1
 FORMAT = pyaudio.paInt16
 
-# Ensure audio directory exists
-AUDIO_DIR = os.path.join(os.path.dirname(__file__), 'static', 'audio')
-os.makedirs(AUDIO_DIR, exist_ok=True)
+# Ensure prescriptions directory exists
+PRESCRIPTIONS_DIR = os.path.join(os.path.dirname(__file__), 'static', 'prescriptions')
+os.makedirs(PRESCRIPTIONS_DIR, exist_ok=True)
 
 class VoiceRecognitionService:
     def __init__(self, socketio_instance):
@@ -50,7 +50,7 @@ class VoiceRecognitionService:
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"recorded_audio_{timestamp}.wav"
-        filepath = os.path.join(AUDIO_DIR, filename)
+        filepath = os.path.join(PRESCRIPTIONS_DIR, filename)
 
         try:
             with wave.open(filepath, 'wb') as wf:
@@ -261,7 +261,7 @@ def run_terminal_version():
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"recorded_audio_{timestamp}.wav"
-        filepath = os.path.join(AUDIO_DIR, filename)
+        filepath = os.path.join(PRESCRIPTIONS_DIR, filename)
 
         try:
             with wave.open(filepath, 'wb') as wf:
