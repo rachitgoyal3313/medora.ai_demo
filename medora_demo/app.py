@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
@@ -7,33 +7,48 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length
 from flask_wtf.csrf import CSRFProtect, CSRFError
 import os
 import random
+from datetime import datetime
+from flask_socketio import SocketIO, emit
+from voice import initialize_voice_service, get_voice_service, register_socketio_handlers
+import io
+import json
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(24).hex()  # Secure random secret key
+app.config['SECRET_KEY'] = os.urandom(24).hex()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///medora.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Helps with session persistence
+app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+# Create static directory if it doesn't exist
+os.makedirs('static', exist_ok=True)
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
+socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
-# User model
+voice_service = initialize_voice_service(socketio)
+register_socketio_handlers(socketio)
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_type = db.Column(db.String(50), nullable=False)  # Doctor, Patient, or Staff
-    first_name = db.Column(db.String(50))  # For doctors and staff
-    last_name = db.Column(db.String(50))  # For doctors and staff
+    user_type = db.Column(db.String(50), nullable=False)
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone_number = db.Column(db.String(20))  # For doctors and staff
-    specialization = db.Column(db.String(100))  # For doctors
-    hospital_name = db.Column(db.String(100))  # Selected hospital
-    city = db.Column(db.String(100))  # For staff
+    phone_number = db.Column(db.String(20))
+    specialization = db.Column(db.String(100))
+    hospital_name = db.Column(db.String(100))
+    city = db.Column(db.String(100))
     password_hash = db.Column(db.String(128), nullable=False)
     receive_updates = db.Column(db.Boolean, default=False)
-    role = db.Column(db.String(50), nullable=False)  # 'doctor', 'patient', or 'staff'
+    role = db.Column(db.String(50), nullable=False)
 
-# Login form
 class LoginForm(FlaskForm):
     email = StringField('Email Address', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -44,7 +59,6 @@ class LoginForm(FlaskForm):
         ('staff', 'Staff')
     ], validators=[DataRequired()])
 
-# Registration form
 class RegisterForm(FlaskForm):
     user_type = SelectField('User Type', choices=[
         ('doctor', 'Doctor'),
@@ -80,7 +94,6 @@ class RegisterForm(FlaskForm):
     agree_terms = BooleanField('I agree to the Terms of Service and Privacy Policy', validators=[DataRequired()])
     receive_updates = BooleanField('Send me updates about new AI features')
 
-# Mock AI functions
 def ai_schedule_appointment():
     doctors = ["Dr. Smith", "Dr. Johnson"]
     return f"AI suggests booking with {random.choice(doctors)} on June 15."
@@ -97,9 +110,9 @@ def ai_admin_insight():
     insights = ["Optimize staff scheduling", "Review inventory levels"]
     return random.choice(insights)
 
-# Handle CSRF errors
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
+    logger.error(f'CSRF error: {str(e)}')
     flash(f'CSRF error: {str(e)}', 'danger')
     return redirect(request.url)
 
@@ -131,24 +144,20 @@ def login():
         return render_template('login.html', form=form)
     
     try:
-        # Get form data directly from request since HTML form names don't match WTF form names
         email = request.form.get('email')
         password = request.form.get('password')
         user_type = request.form.get('user_type')
         remember_me = request.form.get('remember_me')
         
-        # Basic validation
         if not email or not password or not user_type:
             flash('Please fill in all required fields.', 'danger')
             form = LoginForm()
             return render_template('login.html', form=form)
         
-        # Convert to lowercase for consistency
         user_type = user_type.lower()
         
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
-            # Check if user_type matches user's role
             if user.role != user_type:
                 flash(f'Account found, but role mismatch. This account is registered as a {user.role}, not a {user_type}.', 'danger')
                 form = LoginForm()
@@ -156,10 +165,9 @@ def login():
             
             session['user_id'] = user.id
             session['role'] = user.role
-            session.permanent = bool(remember_me)  # Set session permanence based on remember me
+            session.permanent = bool(remember_me)
             flash('Login successful!', 'success')
             
-            # Redirect based on role
             if user.role == 'doctor':
                 return redirect(url_for('doctor_dashboard'))
             elif user.role == 'patient':
@@ -176,6 +184,7 @@ def login():
             return render_template('login.html', form=form)
             
     except Exception as e:
+        logger.error(f'Login error: {str(e)}')
         flash(f'Error during login: {str(e)}', 'danger')
         form = LoginForm()
         return render_template('login.html', form=form)
@@ -187,7 +196,6 @@ def register():
         return render_template('register.html', form=form)
     
     try:
-        # Get form data directly from request since HTML form names don't match WTF form names
         user_type = request.form.get('user_type')
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
@@ -201,7 +209,6 @@ def register():
         terms = request.form.get('agree_terms')
         receive_updates = request.form.get('receive_updates')
         
-        # Basic validation
         if not email or not password or not user_type:
             flash('Please fill in all required fields.', 'danger')
             form = RegisterForm()
@@ -222,16 +229,13 @@ def register():
             form = RegisterForm()
             return render_template('register.html', form=form)
         
-        # Check if email already exists
         if User.query.filter_by(email=email).first():
             flash('Email address already registered.', 'danger')
             form = RegisterForm()
             return render_template('register.html', form=form)
         
-        # Determine role based on user_type
         role = user_type.lower()
         
-        # Role-specific validation
         if role in ['doctor', 'staff'] and (not first_name or not last_name):
             flash('First name and last name are required for doctors and staff.', 'danger')
             form = RegisterForm()
@@ -242,7 +246,6 @@ def register():
             form = RegisterForm()
             return render_template('register.html', form=form)
         
-        # Create new user
         password_hash = generate_password_hash(password)
         user = User(
             user_type=user_type,
@@ -261,12 +264,10 @@ def register():
         db.session.add(user)
         db.session.commit()
         
-        # Log the user in automatically after registration
         session['user_id'] = user.id
         session['role'] = user.role
         flash('Registration successful! Welcome to Medora.ai!', 'success')
         
-        # Redirect based on role
         if user.role == 'doctor':
             return redirect(url_for('doctor_dashboard'))
         elif user.role == 'patient':
@@ -276,6 +277,7 @@ def register():
         
     except Exception as e:
         db.session.rollback()
+        logger.error(f'Registration error: {str(e)}')
         flash(f'Error during registration: {str(e)}', 'danger')
         form = RegisterForm()
         return render_template('register.html', form=form)
@@ -305,12 +307,19 @@ def doctor_dashboard():
     diagnosis = ai_diagnosis()
     return render_template('doctor_dashboard.html', diagnosis=diagnosis)
 
+@app.route('/speak_to_prescribe')
+def speak_to_prescribe():
+    if 'user_id' not in session or session.get('role') != 'doctor':
+        flash('Please log in as a doctor to access this feature.', 'danger')
+        return redirect(url_for('login'))
+    return render_template('speak_to_prescribe.html')
+
 @app.route('/staff_dashboard')
 def staff_dashboard():
     if 'user_id' not in session or session.get('role') != 'staff':
         flash('Please log in as a staff member to access this dashboard.', 'danger')
         return redirect(url_for('login'))
-    schedule = ai_schedule_appointment()  # Reusing for simplicity; customize as needed
+    schedule = ai_schedule_appointment()
     insight = ai_admin_insight()
     return render_template('staff_dashboard.html', schedule=schedule, insight=insight)
 
@@ -321,9 +330,182 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
-# Create database tables
+@app.route('/process_prescription', methods=['POST'])
+@csrf.exempt
+def process_prescription():
+    logger.debug('Processing prescription request')
+    if 'user_id' not in session or session.get('role') != 'doctor':
+        logger.error('Unauthorized access to process_prescription')
+        return jsonify({'error': 'Unauthorized, please log in as a doctor'}), 401
+    
+    data = request.get_json()
+    transcription = data.get('transcription', '')
+    
+    try:
+        doctor = User.query.get(session['user_id'])
+        if not doctor:
+            logger.error('Doctor not found for user_id: %s', session['user_id'])
+            return jsonify({'error': 'Doctor not found'}), 404
+    
+        prescription_html = f"""
+        <div class="prescription-header">
+            <div class="doctor-info">
+                <div class="doctor-avatar">{doctor.first_name[0]}{doctor.last_name[0] if doctor.last_name else ''}</div>
+                <div class="doctor-details">
+                    <h3>Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}</h3>
+                    <p>{doctor.specialization if doctor.specialization else 'General Medicine'}</p>
+                </div>
+            </div>
+            <div class="prescription-date">Date: {datetime.now().strftime('%B %d, %Y')}</div>
+        </div>
+        <div class="patient-info">
+            <div class="patient-name">Patient: [Extracted from voice]</div>
+            <div class="patient-details">Voice input: {transcription[:100]}...</div>
+        </div>
+        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-top: 20px;">
+            <p>Prescription details extracted from voice input will appear here.</p>
+            <p>For demo purposes, showing the transcription:</p>
+            <p style="font-style: italic;">{transcription}</p>
+        </div>
+        <div class="prescription-actions">
+            <button class="action-btn primary" onclick="savePrescription()">
+                💾 Save Prescription
+            </button>
+            <button class="action-btn" onclick="printPrescription()">
+                🖨️ Print
+            </button>
+            <button class="action-btn" onclick="sendPrescription()">
+                📧 Send to Patient
+            </button>
+        </div>
+        """
+        
+        logger.debug('Prescription processed successfully')
+        return jsonify({'html': prescription_html})
+    
+    except Exception as e:
+        logger.error(f'Error in process_prescription: {str(e)}')
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+@app.route('/export_prescription', methods=['POST'])
+@csrf.exempt
+def export_prescription():
+    logger.debug('Export prescription request received')
+    if 'user_id' not in session or session.get('role') != 'doctor':
+        logger.error('Unauthorized access to export_prescription')
+        return jsonify({'error': 'Unauthorized, please log in as a doctor'}), 401
+    
+    data = request.get_json()
+    transcription = data.get('transcription', '')
+    
+    try:
+        doctor = User.query.get(session['user_id'])
+        if not doctor:
+            logger.error('Doctor not found for user_id: %s', session['user_id'])
+            return jsonify({'error': 'Doctor not found'}), 404
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Generating HTML
+        html_content = f"""
+        <div class="prescription-header">
+            <div class="doctor-info">
+                <div class="doctor-avatar">{doctor.first_name[0]}{doctor.last_name[0] if doctor.last_name else ''}</div>
+                <div class="doctor-details">
+                    <h3>Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}</h3>
+                    <p>{doctor.specialization if doctor.specialization else 'General Medicine'}</p>
+                </div>
+            </div>
+            <div class="prescription-date">Date: {datetime.now().strftime('%B %d, %Y')}</div>
+        </div>
+        <div class="patient-info">
+            <div class="patient-name">Patient: [Extracted from voice]</div>
+            <div class="patient-details">Voice input: {transcription[:100]}...</div>
+        </div>
+        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-top: 20px;">
+            <p>Prescription details extracted from voice input will appear here.</p>
+            <p>For demo purposes, showing the transcription:</p>
+            <p style="font-style: italic;">{transcription}</p>
+        </div>
+        <div class="prescription-actions">
+            <button class="action-btn primary" onclick="savePrescription()">💾 Save Prescription</button>
+            <button class="action-btn" onclick="printPrescription()">🖨️ Print</button>
+            <button class="action-btn" onclick="sendPrescription()">📧 Send to Patient</button>
+        </div>
+        """
+        
+        # Generating Text
+        text_content = f"""Prescription
+Date: {datetime.now().strftime('%B %d, %Y')}
+Doctor: Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}
+Specialization: {doctor.specialization if doctor.specialization else 'General Medicine'}
+Patient: [Extracted from voice]
+Prescription Details: {transcription}
+"""
+        text_filename = f"static/prescription_{timestamp}.txt"
+        with open(text_filename, 'w', encoding='utf-8') as f:
+            f.write(text_content)
+        
+        # Generating JSON
+        json_content = {
+            "date": datetime.now().strftime('%B %d, %Y'),
+            "doctor": f"Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}",
+            "specialization": doctor.specialization if doctor.specialization else 'General Medicine',
+            "patient": "[Extracted from voice]",
+            "prescription_details": transcription
+        }
+        json_filename = f"static/prescription_{timestamp}.json"
+        with open(json_filename, 'w', encoding='utf-8') as f:
+            json.dump(json_content, f, indent=2)
+        
+        # Generating PDF with LaTeX
+        latex_content = r"""
+        \documentclass[a4paper,12pt]{article}
+        \usepackage[utf8]{inputenc}
+        \usepackage{geometry}
+        \geometry{margin=1in}
+        \usepackage{parskip}
+        \usepackage{titlesec}
+        \titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+        \usepackage{noto}
+
+        \begin{document}
+
+        \section*{Prescription}
+        \textbf{Date:} """ + datetime.now().strftime('%B %d, %Y') + r""" \\
+        \textbf{Doctor:} Dr. """ + f"{doctor.first_name} {doctor.last_name if doctor.last_name else ''}" + r""" \\
+        \textbf{Specialization:} """ + (doctor.specialization if doctor.specialization else 'General Medicine') + r""" \\
+        \textbf{Patient:} [Extracted from voice] \\
+        \textbf{Prescription Details:} """ + transcription.replace('\n', '\\\\') + r"""
+
+        \end{document}
+        """
+        latex_filename = f"static/prescription_{timestamp}.tex"
+        with open(latex_filename, 'w', encoding='utf-8') as f:
+            f.write(latex_content)
+        
+        logger.debug('Prescription exported successfully')
+        return jsonify({
+            'html': html_content,
+            'text_url': f"/{text_filename}",
+            'pdf_url': f"/{latex_filename}",
+            'json_url': f"/{json_filename}"
+        })
+    
+    except Exception as e:
+        logger.error(f'Error in export_prescription: {str(e)}')
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    try:
+        return send_file(f"static/{filename}")
+    except FileNotFoundError:
+        logger.error(f'Static file not found: {filename}')
+        return jsonify({'error': 'File not found'}), 404
+
 with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
