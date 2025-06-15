@@ -1,0 +1,35 @@
+🎤 MUKUL (0:00 – 0:20) – Introduction
+“Hello Everyone!! We are Team Evolve AI — Mukul, Kushagra, Rachit, and Moksh.
+India’s healthcare system is advancing digitally, but core ground-level problems still persist.
+We’ve created a solution that brings Generative AI to the frontlines of care—bridging gaps between systems, people, and languages.
+In the next two minutes, we’ll show how we’re not just using AI—we’re using it to evolve healthcare.”
+
+🎤 KUSHAGRA (0:20 – 0:45) – Problem Understanding
+“In India, doctors often spend more time filling out records than treating patients.
+Handwritten prescriptions cause errors, and reports don’t travel between departments.
+In rural clinics, there’s a shortage of 80% specialists, and with 1,500+ dialects, language barriers delay care.
+Patients often miss doses or don’t understand instructions.
+This results in miscommunication, inefficiency, and ultimately—lower quality care.”
+
+🎤 RACHIT (0:45 – 1:03) – Gen-AI Solution Part 1
+“Our solution is a Gen-AI-powered Healthcare Assistant that reimagines the clinical workflow:
+
+It reads handwritten prescriptions and reports using OCR and medical NLP
+
+Doctors can simply speak, and our Gen-AI generates structured, digital prescriptions in real time
+
+Medical reports and test results are routed automatically across departments—no paper, no delay”
+
+🎤 MOKSH (1:03 – 1:20) – Gen-AI Solution Part 2
+“Patients use a smart companion app that gives AI-generated medicine reminders, and even confirms intake using voice or camera.
+It supports multiple Indian languages and accents, so even rural health workers can enter or access records hands-free.
+Our system ensures efficiency for hospitals and accessibility for patients—everywhere in India.”
+
+🎤 MUKUL (1:20 – 2:00) – Innovation, Impact & Business Model
+“What sets Evolve AI apart is our end-to-end use of Gen-AI—from data capture to doctor input to patient follow-through.
+It’s fully aligned with the Ayushman Bharat Digital Mission, supports multilingual voice input, and scales from clinics to cities.
+Our business model is a B2B SaaS solution for hospitals and healthcare providers, with a freemium mobile app for patients.
+We offer AI-as-a-service that saves time, reduces errors, and empowers every user—from urban hospitals to rural villages.
+
+We’re not just digitizing healthcare—we’re evolving it.
+We are Team Evolve AI. Thank you.”
