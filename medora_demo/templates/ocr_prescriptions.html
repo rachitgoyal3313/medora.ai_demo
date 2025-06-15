@@ -31,20 +31,17 @@
             width: 280px;
             background: white;
             border-right: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 20px 0;
+            padding: 24px 0;
             height: 100vh;
-            overflow: hidden;
+            overflow-y: auto;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             z-index: 10;
-            display: flex;
-            flex-direction: column;
         }
 
         .logo {
-            padding: 0 24px 20px;
+            padding: 0 24px 32px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            flex-shrink: 0;
+            margin-bottom: 32px;
         }
 
         .logo h1 {
@@ -60,74 +57,50 @@
             font-size: 20px;
         }
 
-        .patient-profile {
-            padding: 0 24px 20px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            text-align: center;
-            flex-shrink: 0;
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 0 16px 32px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
-        .patient-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            object-fit: cover;
-            border: 3px solid #f8f9fa;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .patient-name {
+        .user-info h3 {
+            margin: 0 0 8px 0;
             font-size: 16px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 4px;
         }
 
-        .patient-id {
-            font-size: 12px;
+        .user-info p {
+            margin: 0 0 12px 0;
             color: #666;
-            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .patient-stats {
+        .user-info div {
             display: flex;
             justify-content: space-between;
-            margin-top: 12px;
-            padding: 0 8px;
-        }
-
-        .patient-stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .stat-label {
-            font-size: 10px;
+            font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         .nav-menu {
             list-style: none;
             padding: 0 16px;
-            flex: 1;
-            overflow-y: auto;
         }
 
         .nav-item {
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            position: relative;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 10px 16px;
+            padding: 12px 16px;
             color: #666;
             text-decoration: none;
             border-radius: 12px;
@@ -148,6 +121,17 @@
             color: white;
         }
 
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: white;
+            border-radius: 0 3px 3px 0;
+        }
+
         .nav-icon {
             width: 20px;
             height: 20px;
@@ -160,7 +144,7 @@
         /* Main Content */
         .main-content {
             flex: 1;
-            padding: 20px;
+            padding: 24px;
             height: 100vh;
             overflow-y: auto;
         }
@@ -169,16 +153,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
             background: white;
-            padding: 20px;
+            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            flex-shrink: 0;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .header-left h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             color: #333;
             margin-bottom: 4px;
@@ -186,7 +170,7 @@
 
         .header-left p {
             color: #666;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
         }
 
@@ -209,19 +193,21 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .upload-btn:hover {
             background: #555;
             transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         /* OCR Content */
         .ocr-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            height: calc(100vh - 140px);
+            gap: 24px;
+            height: calc(100vh - 200px);
         }
 
         .upload-section {
@@ -229,13 +215,13 @@
             border-radius: 16px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: #333;
             margin-bottom: 20px;
@@ -283,6 +269,7 @@
             font-size: 14px;
             color: #666;
             margin-bottom: 20px;
+            font-weight: 500;
         }
 
         .file-input {
@@ -293,16 +280,19 @@
             background: #333;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 25px;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .browse-btn:hover {
             background: #555;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .uploaded-image {
@@ -320,7 +310,7 @@
         }
 
         .action-btn {
-            padding: 8px 16px;
+            padding: 10px 16px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 20px;
             background: white;
@@ -330,11 +320,13 @@
             font-size: 12px;
             transition: all 0.3s ease;
             cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .action-btn:hover {
             background: #f8f9fa;
             transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .action-btn.primary {
@@ -353,7 +345,7 @@
             border-radius: 16px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
         }
@@ -379,11 +371,13 @@
         .processing-text {
             font-size: 16px;
             margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .processing-subtext {
             font-size: 14px;
             color: #999;
+            font-weight: 500;
         }
 
         .extracted-content {
@@ -396,6 +390,7 @@
             padding: 16px;
             border-radius: 12px;
             margin-bottom: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .doctor-info {
@@ -410,6 +405,7 @@
             height: 48px;
             border-radius: 50%;
             object-fit: cover;
+            border: 2px solid #f8f9fa;
         }
 
         .doctor-details h3 {
@@ -422,12 +418,14 @@
         .doctor-details p {
             font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         .prescription-date {
             font-size: 12px;
             color: #666;
             text-align: right;
+            font-weight: 500;
         }
 
         .medications-list {
@@ -440,6 +438,7 @@
             border-radius: 12px;
             margin-bottom: 12px;
             border-left: 4px solid #333;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .medication-name {
@@ -476,6 +475,7 @@
             padding: 16px;
             border-radius: 12px;
             border-left: 4px solid #ef6c00;
+            border: 1px solid rgba(239, 108, 0, 0.2);
         }
 
         .instructions h4 {
@@ -489,6 +489,7 @@
             font-size: 14px;
             color: #333;
             line-height: 1.5;
+            font-weight: 500;
         }
 
         .confidence-score {
@@ -499,6 +500,7 @@
             padding: 12px;
             background: #e8f5e8;
             border-radius: 8px;
+            border: 1px solid rgba(46, 125, 50, 0.2);
         }
 
         .confidence-text {
@@ -527,8 +529,8 @@
             border-radius: 16px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 20px;
-            margin-top: 20px;
+            padding: 24px;
+            margin-top: 24px;
         }
 
         .scan-item {
@@ -572,6 +574,7 @@
         .scan-date {
             font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         .scan-status {
@@ -613,11 +616,11 @@
                 flex-direction: column;
                 gap: 16px;
                 align-items: stretch;
-                padding: 16px;
+                padding: 20px;
             }
 
             .header-left h1 {
-                font-size: 20px;
+                font-size: 24px;
             }
 
             .medication-details {
@@ -625,19 +628,20 @@
             }
         }
 
-        .nav-link.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: white;
-            border-radius: 0 3px 3px 0;
+        /* Animation for cards */
+        .upload-section, .results-section, .recent-scans {
+            animation: fadeInUp 0.6s ease-out;
         }
 
-        .nav-item {
-            position: relative;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -652,31 +656,20 @@
                 </h1>
             </div>
             
-            <div class="patient-profile">
-                <img src="/placeholder.svg?height=80&width=80" alt="Patient" class="patient-avatar">
-                <div class="patient-name">Priya Sharma</div>
-                <div class="patient-id">Patient ID: PS-2024-0042</div>
-                
-                <div class="patient-stats">
-                    <div class="patient-stat">
-                        <div class="stat-value">12</div>
-                        <div class="stat-label">Visits</div>
-                    </div>
-                    <div class="patient-stat">
-                        <div class="stat-value">4</div>
-                        <div class="stat-label">Reports</div>
-                    </div>
-                    <div class="patient-stat">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">Doctors</div>
-                    </div>
+            <div class="user-info">
+                <h3>Priya Sharma</h3>
+                <p>Patient ID: PS-2024-0042</p>
+                <div>
+                    <span>12 Visits</span>
+                    <span>4 Reports</span>
+                    <span>3 Doctors</span>
                 </div>
             </div>
             
             <nav>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="{{ url_for('patient_dashboard') }}" class="nav-link"></a>
+                        <a href="{{ url_for('patient_dashboard') }}" class="nav-link">
                             <span class="nav-icon">📊</span>
                             Dashboard
                         </a>
@@ -694,13 +687,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url_for('ocr_prescriptions') }}" class="nav-link active"></a>
+                        <a href="{{ url_for('ocr_prescriptions') }}" class="nav-link active">
                             <span class="nav-icon">📄</span>
                             OCR Prescriptions
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url_for('medora_chat') }}" class="nav-link"></a>
+                        <a href="{{ url_for('medora_chat') }}" class="nav-link">
                             <span class="nav-icon">💬</span>
                             Medora.chat
                         </a>

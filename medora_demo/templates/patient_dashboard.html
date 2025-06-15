@@ -31,20 +31,17 @@
             width: 280px;
             background: white;
             border-right: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 20px 0;
+            padding: 24px 0;
             height: 100vh;
-            overflow: hidden;
+            overflow-y: auto;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             z-index: 10;
-            display: flex;
-            flex-direction: column;
         }
 
         .logo {
-            padding: 0 24px 20px;
+            padding: 0 24px 32px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            flex-shrink: 0;
+            margin-bottom: 32px;
         }
 
         .logo h1 {
@@ -60,74 +57,50 @@
             font-size: 20px;
         }
 
-        .patient-profile {
-            padding: 0 24px 20px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            text-align: center;
-            flex-shrink: 0;
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 0 16px 32px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
-        .patient-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            object-fit: cover;
-            border: 3px solid #f8f9fa;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .patient-name {
+        .user-info h3 {
+            margin: 0 0 8px 0;
             font-size: 16px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 4px;
         }
 
-        .patient-id {
-            font-size: 12px;
+        .user-info p {
+            margin: 0 0 12px 0;
             color: #666;
-            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .patient-stats {
+        .user-info div {
             display: flex;
             justify-content: space-between;
-            margin-top: 12px;
-            padding: 0 8px;
-        }
-
-        .patient-stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .stat-label {
-            font-size: 10px;
+            font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         .nav-menu {
             list-style: none;
             padding: 0 16px;
-            flex: 1;
-            overflow-y: auto;
         }
 
         .nav-item {
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            position: relative;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 10px 16px;
+            padding: 12px 16px;
             color: #666;
             text-decoration: none;
             border-radius: 12px;
@@ -148,6 +121,17 @@
             color: white;
         }
 
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: white;
+            border-radius: 0 3px 3px 0;
+        }
+
         .nav-icon {
             width: 20px;
             height: 20px;
@@ -160,7 +144,7 @@
         /* Main Content */
         .main-content {
             flex: 1;
-            padding: 20px;
+            padding: 24px;
             height: 100vh;
             overflow-y: auto;
         }
@@ -169,16 +153,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
             background: white;
-            padding: 20px;
+            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            flex-shrink: 0;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .header-left h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             color: #333;
             margin-bottom: 4px;
@@ -186,7 +170,7 @@
 
         .header-left p {
             color: #666;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
         }
 
@@ -207,11 +191,13 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .notification-bell:hover {
             background: #eee;
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .notification-badge {
@@ -236,20 +222,20 @@
 
         .search-input {
             width: 250px;
-            padding: 10px 16px 10px 40px;
+            padding: 12px 16px 12px 40px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 25px;
             font-size: 14px;
             background: white;
             font-weight: 500;
             transition: all 0.3s ease;
+            outline: none;
         }
 
         .search-input:focus {
-            outline: none;
             border-color: #333;
             box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
-            transform: scale(1.02);
+            transform: translateY(-1px);
         }
 
         .search-icon {
@@ -265,14 +251,14 @@
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            height: calc(100vh - 140px);
+            gap: 24px;
+            height: calc(100vh - 200px);
         }
 
         .main-section {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
             overflow-y: auto;
             padding-right: 10px;
         }
@@ -284,7 +270,7 @@
             border: 1px solid rgba(0, 0, 0, 0.1);
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 20px;
+            padding: 24px;
             flex-shrink: 0;
         }
 
@@ -296,7 +282,7 @@
         }
 
         .summary-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: #333;
         }
@@ -304,6 +290,7 @@
         .summary-date {
             font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         .health-metrics {
@@ -318,6 +305,7 @@
             border-radius: 12px;
             text-align: center;
             transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .metric-card:hover {
@@ -340,6 +328,7 @@
         .metric-label {
             font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         .metric-status {
@@ -348,6 +337,7 @@
             padding: 4px 8px;
             border-radius: 12px;
             display: inline-block;
+            font-weight: 600;
         }
 
         .status-normal {
@@ -376,7 +366,7 @@
         }
 
         .section-header {
-            padding: 20px;
+            padding: 24px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
@@ -384,7 +374,7 @@
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: #333;
         }
@@ -408,7 +398,7 @@
         .appointment-item {
             display: flex;
             align-items: center;
-            padding: 16px 20px;
+            padding: 16px 24px;
             border-bottom: 1px solid #f8f9fa;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -462,6 +452,7 @@
         .date-time {
             font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         /* Medication Schedule */
@@ -481,7 +472,7 @@
         .medication-item {
             display: flex;
             align-items: center;
-            padding: 16px 20px;
+            padding: 16px 24px;
             border-bottom: 1px solid #f8f9fa;
             transition: all 0.3s ease;
         }
@@ -504,6 +495,7 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .medication-info {
@@ -530,6 +522,7 @@
             background: #f8f9fa;
             padding: 6px 12px;
             border-radius: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .medication-status {
@@ -542,6 +535,7 @@
             justify-content: center;
             font-size: 10px;
             color: white;
+            font-weight: 600;
         }
 
         .status-taken {
@@ -560,7 +554,7 @@
         .sidebar-right {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
             overflow-y: auto;
             padding-left: 10px;
         }
@@ -577,7 +571,7 @@
 
         .message-item {
             display: flex;
-            padding: 16px 20px;
+            padding: 16px 24px;
             border-bottom: 1px solid #f8f9fa;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -598,6 +592,7 @@
             border-radius: 50%;
             margin-right: 12px;
             object-fit: cover;
+            border: 2px solid #f8f9fa;
         }
 
         .message-content {
@@ -619,6 +614,7 @@
         .message-time {
             font-size: 10px;
             color: #666;
+            font-weight: 500;
         }
 
         .message-preview {
@@ -628,6 +624,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 180px;
+            font-weight: 500;
         }
 
         .unread-indicator {
@@ -651,7 +648,7 @@
         .test-item {
             display: flex;
             align-items: center;
-            padding: 16px 20px;
+            padding: 16px 24px;
             border-bottom: 1px solid #f8f9fa;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -676,6 +673,7 @@
             align-items: center;
             justify-content: center;
             font-size: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .test-info {
@@ -692,6 +690,7 @@
         .test-date {
             font-size: 12px;
             color: #666;
+            font-weight: 500;
         }
 
         .test-result {
@@ -716,7 +715,7 @@
             background: white;
             border-radius: 16px;
             border: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            padding: 24px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             flex-shrink: 0;
         }
@@ -724,12 +723,12 @@
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 12px;
             margin-top: 16px;
         }
 
         .action-btn {
-            padding: 10px 16px;
+            padding: 12px 16px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 25px;
             background: white;
@@ -743,6 +742,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .action-btn:hover {
@@ -775,7 +775,7 @@
             height: 100%;
             background: #333;
             border-radius: 3px;
-            width: 67%;
+            width: 33%;
         }
 
         /* Responsive */
@@ -813,7 +813,7 @@
                 flex-direction: column;
                 gap: 16px;
                 align-items: stretch;
-                padding: 16px;
+                padding: 20px;
             }
 
             .search-input {
@@ -825,7 +825,7 @@
             }
 
             .header-left h1 {
-                font-size: 20px;
+                font-size: 24px;
             }
         }
 
@@ -844,21 +844,6 @@
                 transform: translateY(0);
             }
         }
-
-        .nav-link.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: white;
-            border-radius: 0 3px 3px 0;
-        }
-
-        .nav-item {
-            position: relative;
-        }
     </style>
 </head>
 <body>
@@ -872,31 +857,20 @@
                 </h1>
             </div>
             
-            <div class="patient-profile">
-                <img src="/placeholder.svg?height=80&width=80" alt="Patient" class="patient-avatar">
-                <div class="patient-name">Priya Sharma</div>
-                <div class="patient-id">Patient ID: PS-2024-0042</div>
-                
-                <div class="patient-stats">
-                    <div class="patient-stat">
-                        <div class="stat-value">12</div>
-                        <div class="stat-label">Visits</div>
-                    </div>
-                    <div class="patient-stat">
-                        <div class="stat-value">4</div>
-                        <div class="stat-label">Reports</div>
-                    </div>
-                    <div class="patient-stat">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">Doctors</div>
-                    </div>
+            <div class="user-info">
+                <h3>Priya Sharma</h3>
+                <p>Patient ID: PS-2024-0042</p>
+                <div>
+                    <span>12 Visits</span>
+                    <span>4 Reports</span>
+                    <span>3 Doctors</span>
                 </div>
             </div>
             
             <nav>
                 <ul class="nav-menu">
                     <li class="nav-item">
-                        <a href="patient_dashboard.html" class="nav-link active">
+                        <a href="{{ url_for('patient_dashboard') }}" class="nav-link active">
                             <span class="nav-icon">📊</span>
                             Dashboard
                         </a>
@@ -914,13 +888,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url_for('ocr_prescriptions') }}" class="nav-link"></a>
+                        <a href="{{ url_for('ocr_prescriptions') }}" class="nav-link">
                             <span class="nav-icon">📄</span>
                             OCR Prescriptions
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url_for('medora_chat') }}" class="nav-link"></a>
+                        <a href="{{ url_for('medora_chat') }}" class="nav-link">
                             <span class="nav-icon">💬</span>
                             Medora.chat
                         </a>
@@ -1093,10 +1067,10 @@
                             </div>
                         </div>
                         
-                        <div style="padding: 0 20px 20px">
+                        <div style="padding: 0 24px 24px">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                 <span style="font-size: 12px; font-weight: 600; color: #333;">Today's Progress</span>
-                                <span style="font-size: 12px; color: #666;">1/3 taken</span>
+                                <span style="font-size: 12px; color: #666; font-weight: 500;">1/3 taken</span>
                             </div>
                             <div class="progress-container">
                                 <div class="progress-bar"></div>

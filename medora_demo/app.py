@@ -13,6 +13,7 @@ from voice import initialize_voice_service, get_voice_service, register_socketio
 import io
 import json
 import logging
+import google.generativeai as genai
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -35,6 +36,33 @@ socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
 voice_service = initialize_voice_service(socketio)
 register_socketio_handlers(socketio)
+
+# Load Gemini API key
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyBHnYjOpoHNTTcIW8FRtI3XY3KSDqaBjZ4")
+if not GEMINI_API_KEY:
+    logger.error("GEMINI_API_KEY not found in environment variables.")
+    raise RuntimeError("GEMINI_API_KEY not found in environment variables.")
+genai.configure(api_key=GEMINI_API_KEY)
+
+print(GEMINI_API_KEY)
+
+# Load custom dataset/instructions
+try:
+    with open("dataset.txt", "r", encoding="utf-8") as f:
+        custom_context = f.read()
+except FileNotFoundError:
+    logger.error("dataset.txt not found.")
+    raise RuntimeError("dataset.txt not found.")
+
+# Create the Gemini model with context
+try:
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",  # Updated to a stable model
+        system_instruction=custom_context
+    )
+except Exception as e:
+    logger.error(f"Failed to initialize Gemini model: {str(e)}")
+    raise RuntimeError(f"Failed to initialize Gemini model: {str(e)}")
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -122,15 +150,6 @@ def ai_diagnosis():
 def ai_admin_insight():
     insights = ["Optimize staff scheduling", "Review inventory levels"]
     return random.choice(insights)
-
-def ai_chat_response(query):
-    responses = {
-        "moral dilemma": "Exploring when lying might be justified involves weighing the consequences and intentions behind the act. Would you like to discuss a specific scenario?",
-        "philosophy": "What makes life meaningful varies across perspectives—some find it in relationships, others in purpose or achievement. What's your view on this?",
-        "tech ethics": "AI in decision-making raises questions about accountability and bias. Would you like to explore a particular aspect, like AI in healthcare?",
-        "personal ethics": "Reflecting on moral decisions can clarify your values. Want to discuss a recent decision you made?"
-    }
-    return responses.get(query.lower(), "I'm here to help with your health or ethical questions. Could you clarify or ask something specific?")
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
@@ -359,13 +378,11 @@ def ocr_prescriptions():
                 flash('No file uploaded.', 'danger')
                 return redirect(url_for('ocr_prescriptions'))
             
-            # Mock OCR processing (replace with actual OCR logic if available)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"prescription_scan_{timestamp}.jpg"
             filepath = os.path.join(PRESCRIPTIONS_DIR, filename)
             file.save(filepath)
             
-            # Mock extracted data
             medications = [
                 {
                     "name": "Metformin 500mg",
@@ -405,31 +422,38 @@ def ocr_prescriptions():
             flash(f'Error processing upload: {str(e)}', 'danger')
             return redirect(url_for('ocr_prescriptions'))
     
-    # Fetch recent prescriptions
     recent_prescriptions = Prescription.query.filter_by(user_id=user.id).order_by(Prescription.date.desc()).limit(3).all()
     return render_template('ocr_prescriptions.html', user=user, recent_prescriptions=recent_prescriptions)
 
 @app.route('/medora_chat', methods=['GET', 'POST'])
 def medora_chat():
     if 'user_id' not in session or session.get('role') != 'patient':
-        flash('Please log in as a patient to access this feature.', 'danger')
-        return redirect(url_for('login'))
+        return jsonify({'error': 'Please log in as a patient'}), 401
     
     user = User.query.get(session['user_id'])
     if request.method == 'POST':
         try:
             query = request.form.get('query')
             if not query:
-                flash('Please enter a query.', 'danger')
-                return redirect(url_for('medora_chat'))
+                return jsonify({'error': 'Please enter a query'}), 400
             
-            response = ai_chat_response(query)
-            return render_template('medora_chat.html', user=user, response=response, query=query)
+            # Use the Gemini API with detailed error handling
+            response = model.generate_content(query)
+            if not response.candidates or not response.candidates[0].content:
+                logger.error("No valid response from Gemini API")
+                return jsonify({'error': 'No response received from the AI'}), 500
+            
+            # Extract text from the first candidate
+            response_text = response.candidates[0].content.parts[0].text
+            if not response_text:
+                logger.error("Empty response text from Gemini API")
+                return jsonify({'error': 'No response received from the AI'}), 500
+            
+            return jsonify({'response': response_text, 'query': query})
         
         except Exception as e:
             logger.error(f'Error processing chat query: {str(e)}')
-            flash(f'Error processing query: {str(e)}', 'danger')
-            return redirect(url_for('medora_chat'))
+            return jsonify({'error': f'Error processing query: {str(e)}'}), 500
     
     return render_template('medora_chat.html', user=user)
 
@@ -516,7 +540,6 @@ def export_prescription():
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Generating HTML
         html_content = f"""
         <div class="prescription-header">
             <div class="doctor-info">
@@ -531,7 +554,8 @@ def export_prescription():
         <div class="patient-info">
             <div class="patient-name">Patient: [Extracted from voice]</div>
             <div class="patient-details">Voice input: {transcription[:100]}...</div>
-       green">
+        </div>
+        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-top: 20px;">
             <p>Prescription details extracted from voice input will appear here.</p>
             <p>For demo purposes, showing the transcription:</p>
             <p style="font-style: italic;">{transcription}</p>
@@ -543,7 +567,6 @@ def export_prescription():
         </div>
         """
         
-        # Generating Text
         text_content = f"""Prescription
 Date: {datetime.now().strftime('%B %d, %Y')}
 Doctor: Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}
@@ -555,7 +578,6 @@ Prescription Details: {transcription}
         with open(text_filename, 'w', encoding='utf-8') as f:
             f.write(text_content)
         
-        # Generating JSON
         json_content = {
             "date": datetime.now().strftime('%B %d, %Y'),
             "doctor": f"Dr. {doctor.first_name} {doctor.last_name if doctor.last_name else ''}",
@@ -567,7 +589,6 @@ Prescription Details: {transcription}
         with open(json_filename, 'w', encoding='utf-8') as f:
             json.dump(json_content, f, indent=2)
         
-        # Generating PDF with LaTeX
         latex_content = r"""
         \documentclass[a4paper,12pt]{article}
         \usepackage[utf8]{inputenc}
