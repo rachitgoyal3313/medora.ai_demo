@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medora.ai - Create Account</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #e5e8ec 0%, #f8f9fa 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            line-height: 1.5;
+            color: #333;
+            font-weight: 500;
+            overflow: hidden;
+        }
+
+        .register-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1100px;
+            height: 95vh;
+            max-height: 750px;
+            display: flex;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .register-left {
+            flex: 1;
+            background: linear-gradient(135deg, #e5e8ec 0%, #f8f9fa 100%);
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dna-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        .brand {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 30px;
+        }
+
+        .brand h1 {
+            font-size: 2.2rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+            font-weight: 500;
+        }
+
+        .features {
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .register-right {
+            flex: 1.2;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #ddd #fff;
+        }
+
+        .register-right::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .register-right::-webkit-scrollbar-track {
+            background: #fff;
+        }
+
+        .register-right::-webkit-scrollbar-thumb {
+            background-color: #ddd;
+            border-radius: 6px;
+        }
+
+        .register-form h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .register-form p {
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.8rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: white;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #333;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+            font-weight: 500;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            margin-top: 2px;
+        }
+
+        .checkbox-group a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .checkbox-group a:hover {
+            text-decoration: underline;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .register-btn:hover {
+            background: #555;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .register-btn:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 15px 0;
+            position: relative;
+            color: #666;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #ddd;
+            z-index: 1;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-link {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .login-link a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .flash-messages {
+            margin-bottom: 15px;
+        }
+
+        .flash-message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .flash-error {
+            background: #fee;
+            color: #c53030;
+            border: 1px solid #fed7d7;
+        }
+
+        .flash-success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #c6f6d5;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .role-option {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .role-option:hover {
+            border-color: #333;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-option.selected {
+            border-color: #333;
+            background: #f8f9fa;
+        }
+
+        .role-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .role-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.8rem;
+            margin-bottom: 2px;
+        }
+
+        .role-desc {
+            font-size: 0.7rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .register-container {
+                flex-direction: column;
+                max-width: 400px;
+                height: auto;
+                max-height: none;
+            }
+
+            .register-left {
+                padding: 30px 20px;
+                min-height: 150px;
+            }
+
+            .register-right {
+                padding: 30px 20px;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+
+            .brand h1 {
+                font-size: 1.8rem;
+            }
+
+            .features {
+                display: none;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .role-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-left">
+            <video class="dna-video" autoplay muted loop>
+                <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/dna-background-AzzZD9EVkFiKRDsN4yRjfUnb1m1Gjb.mp4" type="video/mp4">
+            </video>
+            <div class="brand">
+                <div class="logo-container">
+                    <img src="medora-logo.png" alt="Medora Logo" class="logo-img">
+                    <h1>Medora.ai</h1>
+                </div>
+                <div class="tagline">Transforming Healthcare with AI</div>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon"></div>
+                    <span>Voice-to-text prescriptions in 22+ languages</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon"></div>
+                    <span>OCR + NLP document processing</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon"></div>
+                    <span>Intelligent data integration</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon"></div>
+                    <span>Multilingual patient assistant</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon"></div>
+                    <span>50% reduction in paperwork time</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon"></div>
+                    <span>80% improvement in medication adherence</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="register-right">
+            <div class="register-form">
+                <h2>Create your account</h2>
+                <p>Join thousands of healthcare professionals using AI to transform patient care</p>
+
+                <!-- Flash messages section for Flask -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('register') }}">
+                    <!-- CSRF token for Flask-WTF -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Role Selection -->
+                    <div class="role-selector">
+                        <div class="role-option" data-role="doctor">
+                            <span class="role-icon">👨‍⚕️</span>
+                            <div class="role-title">Doctor</div>
+                            <div class="role-desc">Healthcare provider</div>
+                        </div>
+                        <div class="role-option" data-role="patient">
+                            <span class="role-icon">🧑</span>
+                            <div class="role-title">Patient</div>
+                            <div class="role-desc">Healthcare recipient</div>
+                        </div>
+                        <div class="role-option" data-role="staff">
+                            <span class="role-icon">👩‍💼</span>
+                            <div class="role-title">Staff</div>
+                            <div class="role-desc">Hospital personnel</div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="user_role" name="user_type" value="">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input 
+                                type="text" 
+                                id="first_name" 
+                                name="first_name" 
+                                value="{{ request.form.first_name or '' }}"
+                                required 
+                                placeholder="Enter your first name"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input 
+                                type="text" 
+                                id="last_name" 
+                                name="last_name" 
+                                value="{{ request.form.last_name or '' }}"
+                                required 
+                                placeholder="Enter your last name"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            value="{{ request.form.email or '' }}"
+                            required 
+                            placeholder="Enter your professional email"
+                        >
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone_number" 
+                                value="{{ request.form.phone or '' }}"
+                                required 
+                                placeholder="+91 98765 43210"
+                            >
+                        </div>
+                        <div class="form-group doctor-field">
+                            <label for="specialization">Specialization</label>
+                            <select id="specialization" name="specialization">
+                                <option value="">Select specialization</option>
+                                <option value="general_medicine">General Medicine</option>
+                                <option value="cardiology">Cardiology</option>
+                                <option value="neurology">Neurology</option>
+                                <option value="orthopedics">Orthopedics</option>
+                                <option value="pediatrics">Pediatrics</option>
+                                <option value="gynecology">Gynecology</option>
+                                <option value="dermatology">Dermatology</option>
+                                <option value="psychiatry">Psychiatry</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group doctor-field staff-field">
+                            <label for="hospital_name">Hospital/Clinic Name</label>
+                            <input 
+                                type="text" 
+                                id="hospital_name" 
+                                name="hospital_name" 
+                                value="{{ request.form.hospital_name or '' }}"
+                                placeholder="Enter your workplace name"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input 
+                                type="text" 
+                                id="city" 
+                                name="city" 
+                                value="{{ request.form.city or '' }}"
+                                required 
+                                placeholder="Enter your city"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                required 
+                                placeholder="Create a strong password"
+                                minlength="8"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input 
+                                type="password" 
+                                id="confirm_password" 
+                                name="confirm_password" 
+                                required 
+                                placeholder="Confirm your password"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="terms" name="agree_terms" required>
+                        <label for="terms">
+                            I agree to the <a href="#" target="_blank">Terms of Service</a> and 
+                            <a href="#" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="newsletter" name="receive_updates" {{ 'checked' if request.form.newsletter }}>
+                        <label for="newsletter">
+                            Send me updates about new AI features
+                        </label>
+                    </div>
+
+                    <button type="submit" class="register-btn">Create Account</button>
+                </form>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <div class="login-link">
+                    Already have an account? 
+                    <a href="{{ url_for('login') if url_for else 'login.html' }}">Sign in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth animations and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Role selection
+            const roleOptions = document.querySelectorAll('.role-option');
+            const roleInput = document.getElementById('user_role');
+            const doctorFields = document.querySelectorAll('.doctor-field');
+            const staffFields = document.querySelectorAll('.staff-field');
+            
+            function updateFormFields(role) {
+                // Show/hide fields based on role
+                if (role === 'doctor') {
+                    doctorFields.forEach(field => field.style.display = 'block');
+                    doctorFields.forEach(field => field.querySelector('input, select').required = true);
+                } else {
+                    doctorFields.forEach(field => field.style.display = role === 'staff' ? 'block' : 'none');
+                    doctorFields.forEach(field => field.querySelector('input, select').required = false);
+                }
+                
+                // Staff-specific fields
+                if (role === 'staff') {
+                    staffFields.forEach(field => field.style.display = 'block');
+                    staffFields.forEach(field => field.querySelector('input, select').required = true);
+                } else if (role !== 'doctor') {
+                    staffFields.forEach(field => field.style.display = 'none');
+                    staffFields.forEach(field => field.querySelector('input, select').required = false);
+                }
+            }
+            
+            roleOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    roleOptions.forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    roleInput.value = this.dataset.role;
+                    updateFormFields(this.dataset.role);
+                });
+            });
+
+            // Set default role
+            if (roleOptions.length > 0 && !roleInput.value) {
+                roleOptions[0].click();
+            }
+
+            // Password confirmation validation
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            function validatePassword() {
+                if (password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity("Passwords don't match");
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            }
+            
+            password.addEventListener('change', validatePassword);
+            confirmPassword.addEventListener('keyup', validatePassword);
+
+            // Add loading state to register button
+            const registerForm = document.querySelector('form');
+            const registerBtn = document.querySelector('.register-btn');
+            
+            registerForm.addEventListener('submit', function(e) {
+                if (!roleInput.value) {
+                    e.preventDefault();
+                    alert('Please select your role');
+                    return;
+                }
+                
+                registerBtn.innerHTML = 'Creating Account...';
+                registerBtn.disabled = true;
+            });
+
+            // Auto-hide flash messages after 5 seconds
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateY(-20px)';
+                    setTimeout(() => {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+
+            // Phone number formatting
+            const phoneInput = document.getElementById('phone');
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 0 && !value.startsWith('91')) {
+                    value = '91' + value;
+                }
+                if (value.length > 12) {
+                    value = value.slice(0, 12);
+                }
+                
+                // Format as +91 XXXXX XXXXX
+                if (value.length >= 2) {
+                    value = '+' + value.slice(0, 2) + ' ' + value.slice(2, 7) + ' ' + value.slice(7);
+                }
+                
+                e.target.value = value.trim();
+            });
+        });
+    </script>
+</body>
+</html>

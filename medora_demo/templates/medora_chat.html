@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medora.ai - Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.12/lib/marked.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            font-weight: 500;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 24px 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            z-index: 10;
+        }
+
+        .logo {
+            padding: 0 24px 32px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            font-size: 20px;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 0 16px 32px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .user-info h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .user-info p {
+            margin: 0 0 12px 0;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .user-info div {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 16px;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: #f8f9fa;
+            color: #333;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            background: #333;
+            color: white;
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: white;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            color: #666;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #2e7d32;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2e7d32;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .chat-container {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .chat-header h3 {
+            margin: 0 0 8px 0;
+            color: #333;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .chat-header p {
+            margin: 0 0 20px 0;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0;
+        }
+
+        .quick-links button {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .quick-links button:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 24px;
+            background: #f8f9fa;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            margin: 16px 0;
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message, .ai-message, .error-message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .user-message {
+            background: #333;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message {
+            background: white;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-message p, .ai-message ul, .ai-message ol {
+            margin: 0.5em 0;
+        }
+
+        .ai-message p:first-child {
+            margin-top: 0;
+        }
+
+        .ai-message p:last-child {
+            margin-bottom: 0;
+        }
+
+        .ai-message ul {
+            padding-left: 20px;
+        }
+
+        .ai-message strong {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .ai-message h3 {
+            font-size: 1.1rem;
+            margin: 0.5em 0;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #b91c1c;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #fca5a5;
+        }
+
+        .message-meta {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .user-message + .message-meta {
+            align-self: flex-end;
+        }
+
+        .ai-message + .message-meta, .error-message + .message-meta {
+            align-self: flex-start;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-style: italic;
+            animation: fadeIn 0.3s ease-in;
+            max-width: 70%;
+            margin-right: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #666;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 12px;
+            padding: 24px;
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            align-items: flex-end;
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            font-size: 14px;
+            font-family: inherit;
+            font-weight: 500;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            border-color: #333;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-width: 50px;
+        }
+
+        .chat-input button:hover {
+            background: #555;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-input button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .chat-input button.recording {
+            background: #ff4757;
+            animation: recordingPulse 1s infinite;
+        }
+
+        @keyframes recordingPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .chat-input button.recording:hover {
+            background: #ff3742;
+        }
+
+        .bottom-quick-links {
+            padding: 0 24px 24px 24px;
+            background: white;
+        }
+
+        .bottom-quick-links .quick-links {
+            justify-content: center;
+        }
+
+        .bottom-quick-links .quick-links button {
+            font-size: 11px;
+            padding: 6px 12px;
+            background: #f8f9fa;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+                padding: 20px;
+            }
+
+            .header-left h1 {
+                font-size: 24px;
+            }
+
+            .user-message, .ai-message, .error-message {
+                max-width: 85%;
+            }
+
+            .chat-input {
+                padding: 16px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .quick-links {
+                justify-content: center;
+            }
+        }
+
+        /* Animation for cards */
+        .chat-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>
+                    <span class="logo-icon">🏥</span>
+                    Medora.ai
+                </h1>
+            </div>
+            
+            <div class="user-info">
+                <h3>Priya Sharma</h3>
+                <p>Patient ID: PS-2024-0042</p>
+                <div>
+                    <span>12 Visits</span>
+                    <span>4 Reports</span>
+                    <span>3 Doctors</span>
+                </div>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="{{ url_for('patient_dashboard') }}" class="nav-link">
+                            <span class="nav-icon">📊</span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📅</span>
+                            Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">💊</span>
+                            Medications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('ocr_prescriptions') }}" class="nav-link">
+                            <span class="nav-icon">📄</span>
+                            OCR Prescriptions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('medora_chat') }}" class="nav-link active">
+                            <span class="nav-icon">💬</span>
+                            Medora.chat
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📋</span>
+                            Medical Records
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">🩺</span>
+                            Test Results
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">⚙️</span>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Medora.chat</h1>
+                    <p>Your AI health assistant - Ask questions about your health, medications, and symptoms</p>
+                </div>
+                <div class="header-right">
+                    <div class="status-indicator"></div>
+                    <span>AI Assistant Online</span>
+                </div>
+            </header>
+
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h3>Your AI Health Assistant</h3>
+                    <p>Hello {{ user.first_name }}! I'm your AI health assistant. I can help with questions about your medications, symptoms, health tips, and more. What would you like to know?</p>
+                    <div class="quick-links">
+                        <button onclick="sendQuickQuery('Tell me about my medications')">💊 My Medications</button>
+                        <button onclick="sendQuickQuery('What should I do if I miss a dose?')">⏰ Missed Dose</button>
+                        <button onclick="sendQuickQuery('Can you provide diet tips?')">🥗 Diet Tips</button>
+                        <button onclick="sendQuickQuery('Explain my recent test results')">📊 Test Results</button>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                </div>
+                
+                <div class="chat-input">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" id="chat-input" placeholder="Ask Medora anything about your health..." autocomplete="off">
+                    <button onclick="sendMessage()">➤</button>
+                    <button id="voice-btn" onclick="startVoiceInput()">🎤</button>
+                </div>
+                
+                <div class="bottom-quick-links">
+                    <div class="quick-links">
+                        <button onclick="sendQuickQuery('What are the side effects of my medications?')">Side Effects</button>
+                        <button onclick="sendQuickQuery('When is my next appointment?')">Next Appointment</button>
+                        <button onclick="sendQuickQuery('How can I manage my blood sugar?')">Blood Sugar Tips</button>
+                        <button onclick="sendQuickQuery('What should I do in an emergency?')">Emergency Help</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Configure marked.js for markdown rendering
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const csrfToken = document.querySelector('input[name=csrf_token]').value;
+            const query = input.value.trim();
+            if (!query) return;
+
+            // Add user message
+            const messages = document.getElementById('chat-messages');
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message';
+            userMessageDiv.innerHTML = `
+                <div class="user-message">${query}</div>
+                <div class="message-meta">${new Date().toLocaleTimeString()}</div>
+            `;
+            messages.appendChild(userMessageDiv);
+            input.value = '';
+
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <span>Medora is thinking</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+                <div class="message-meta">${new Date().toLocaleTimeString()}</div>
+            `;
+            messages.appendChild(typingDiv);
+            messages.scrollTop = messages.scrollHeight;
+
+            try {
+                const response = await fetch('/medora_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: `query=${encodeURIComponent(query)}`
+                });
+                messages.removeChild(typingDiv);
+
+                const data = await response.json();
+
+                // Add AI response or error
+                const aiMessageDiv = document.createElement('div');
+                aiMessageDiv.className = 'message';
+                if (data.error) {
+                    aiMessageDiv.innerHTML = `
+                        <div class="error-message">${data.error}</div>
+                        <div class="message-meta">${new Date().toLocaleTimeString()}</div>
+                    `;
+                } else {
+                    aiMessageDiv.innerHTML = `
+                        <div class="ai-message">${marked.parse(data.response)}</div>
+                        <div class="message-meta">${new Date().toLocaleTimeString()}</div>
+                    `;
+                }
+                messages.appendChild(aiMessageDiv);
+                messages.scrollTop = messages.scrollHeight;
+            } catch (error) {
+                messages.removeChild(typingDiv);
+                const aiMessageDiv = document.createElement('div');
+                aiMessageDiv.className = 'message';
+                aiMessageDiv.innerHTML = `
+                    <div class="error-message">Error: Unable to get response. Please try again.</div>
+                    <div class="message-meta">${new Date().toLocaleTimeString()}</div>
+                `;
+                messages.appendChild(aiMessageDiv);
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        function sendQuickQuery(query) {
+            document.getElementById('chat-input').value = query;
+            sendMessage();
+        }
+
+        function startVoiceInput() {
+            const voiceBtn = document.getElementById('voice-btn');
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+
+            // Check for SpeechRecognition support
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message';
+                errorDiv.innerHTML = `
+                    <div class="error-message">Voice input is not supported in this browser. Please use a supported browser like Chrome.</div>
+                    <div class="message-meta">${new Date().toLocaleTimeString()}</div>
+                `;
+                messages.appendChild(errorDiv);
+                messages.scrollTop = messages.scrollHeight;
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-IN'; // Set to Indian English
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            // Toggle recording state
+            if (voiceBtn.classList.contains('recording')) {
+                recognition.stop();
+                return;
+            }
+
+            voiceBtn.classList.add('recording');
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                input.value = transcript;
+                voiceBtn.classList.remove('recording');
+                sendMessage(); // Auto-submit the query
+            };
+
+            recognition.onerror = (event) => {
+                voiceBtn.classList.remove('recording');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message';
+                errorDiv.innerHTML = `
+                    <div class="error-message">Voice input error: ${event.error}. Please try again.</div>
+                    <div class="message-meta">${new Date().toLocaleTimeString()}</div>
+                `;
+                messages.appendChild(errorDiv);
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            recognition.onend = () => {
+                voiceBtn.classList.remove('recording');
+            };
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
