@@ -12,7 +12,7 @@ from flask_socketio import SocketIO, emit
 import base64
 
 # --- Configuration ---
-YOUR_API_KEY = os.environ.get("ASSEMBLY_AI_API_KEY", "09b245d3b30b4fe5becbad104aaa0204")  # Fallback to default if not set
+YOUR_API_KEY = os.environ.get("ASSEMBLY_AI_API_KEY", "6e61f9fdd89d46168a30ce40d5226400")  # Fallback to default if not set
 print(YOUR_API_KEY)
 CONNECTION_PARAMS = {
     "sample_rate": 16000,
